@@ -2,13 +2,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from robogame_engine.user_interface import UserInterface
-
-
-def start_ui(name, child_conn):
-    ui = UserInterface(name)
-    ui.run(child_conn)
-
 
 def _collide_circle(left, right):
     """

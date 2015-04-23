@@ -3,11 +3,10 @@
 from multiprocessing import Pipe, Process
 import time
 
-from core import _in_radar_fork, start_ui
 from objects import ObjectState
 from robogame_engine import events, constants
-import geometry
-import objects
+import geometryb
+from robogame_engine.user_interface import UserInterface
 
 
 class Scene:
@@ -16,82 +15,26 @@ class Scene:
     """
 
     def __init__(self, name):
-        self.grounds = []
-        self.shots = []
-        self.explosions = []
-
-        objects.Shot.container = self.shots
-        objects.Explosion.container = self.explosions
-        objects.Tank.container = self.grounds
-
+        self.objects = []
+        objects.GameObject.container = self.objects
         self.hold_state = False  # режим пошаговой отладки
         self._step = 0
         self.name = name
+        self.parent_conn = None
+        self.ui = None
 
     def game_step(self):
         """
             Proceed objects states, collision detection, hits
             and radars discovering
         """
-        for obj in self.grounds + self.shots:
-            obj._distance_cache = {}
-        for obj in self.grounds:
-            obj._radar_detected_objs = []
-            obj._detected_by = []
-        searched_left_ids = []
-        for left in self.grounds[:]:
-            #~ searched_left_ids.append(left.id)
-            left.debug(">>> start proceed at scene step")
-            left.debug(str(left))
-            for right in self.grounds[:]:
-                if (right.id == left.id) or (right.id in searched_left_ids):
-                    continue
-                distance = left.distance_to(right)
-                # коллизии
-                overlap_distance = int(left.radius + right.radius - distance)
-                if overlap_distance > 1:
-                    # могут пересекаться одним пикселем
-                    step_back_vector = geometry.Vector(right,
-                                                       left,
-                                                       overlap_distance // 2)
-                    left.debug('step_back_vector %s', step_back_vector)
-                    left.coord.add(step_back_vector)
-                    right.coord.add(-step_back_vector)
-                    left._events.put(events.EventCollide(right))
-                    right._events.put(events.EventCollide(left))
-                # радары
-                if distance < constants.tank_radar_range:
-                    left.debug("distance < constants.tank_radar_range for %s",
-                               right.id)
-                    if _in_radar_fork(left, right):
-                        left.debug("see %s", right.id)
-                        if right.armor > 0:
-                            left._radar_detected_objs.append(right)
-                            right._detected_by.append(left)
-            # попадания (список летяших снарядов может уменьшаться)
-            for shot in self.shots[:]:
-                if shot.owner and shot.owner == left:
-                    continue
-                if _collide_circle(shot, left):
-                    left.hit(shot)
-                    shot.detonate_at(left)
-                    # self.shots.remove(shot)
-        # после главного цикла - евенты могут меняться
-        for obj in self.grounds:
-            if obj._radar_detected_objs:
-                radar_event = events.EventRadarRange(obj._radar_detected_objs)
-                obj._events.put(radar_event)
-            obj._proceed_events()
-            obj._game_step()
-
-        for obj in self.shots + self.explosions:
-            obj._game_step()
+        pass
 
     def get_objects_state(self):
-        objects_state = {}
-        for obj in self.grounds + self.shots + self.explosions:
-            objects_state[obj.id] = ObjectState(obj)
-        return objects_state
+        """
+
+        """
+        return []
 
     def go(self):
         """
@@ -115,7 +58,7 @@ class Scene:
                 if ui_state.the_end:
                     break
 
-                for obj in self.grounds:
+                for obj in self.objects:
                     obj._selected = obj.id in ui_state.selected_ids
 
                 # переключение режима отладки
@@ -147,3 +90,7 @@ class Scene:
 
         print 'Thank for playing robopycode! See you in the future :)'
 
+
+def start_ui(name, child_conn):
+    ui = UserInterface(name)
+    ui.run(child_conn)

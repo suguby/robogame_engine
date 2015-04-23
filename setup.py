@@ -16,7 +16,7 @@ setup(
     license='BSD License',
     description='The package allows you to create RoboGames.',
     long_description=README,
-    url='https://bitbucket.org/suguby/robogame_engine',
+    url='https://github.com/suguby/robogame_engine',
     author='Shandrinov Vadim',
     author_email='suguby@gmail.com',
     classifiers=[
