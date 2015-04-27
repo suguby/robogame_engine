@@ -14,12 +14,6 @@ class GameEvent:
         return self._event_objs
 
 
-class EventBorn(GameEvent):
-
-    def handle(self, obj):
-        obj.born()
-
-
 class EventStopped(GameEvent):
 
     def handle(self, obj):
@@ -32,34 +26,10 @@ class EventStoppedAtTargetPoint(GameEvent):
         obj.stopped_at_target_point(self._event_objs)
 
 
-class EventGunReloaded(GameEvent):
-
-    def handle(self, obj):
-        obj.gun_reloaded()
-
-
 class EventCollide(GameEvent):
 
     def handle(self, obj):
         obj.collided_with(self._event_objs)
-
-
-class EventHit(GameEvent):
-
-    def handle(self, obj):
-        obj.hitted()
-
-
-class EventTargetDestroyed(GameEvent):
-
-    def handle(self, obj):
-        obj.target_destroyed()
-
-
-class EventRadarRange(GameEvent):
-
-    def handle(self, obj):
-        obj.in_tank_radar_range(self._event_objs)
 
 
 class EventHearbeat(GameEvent):

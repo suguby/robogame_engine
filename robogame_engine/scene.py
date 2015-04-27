@@ -3,7 +3,7 @@
 from multiprocessing import Pipe, Process
 import time
 
-from objects import ObjectState
+from robogame_engine.states import ObjectState
 from robogame_engine import events, constants
 import geometryb
 from robogame_engine.user_interface import UserInterface

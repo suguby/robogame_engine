@@ -3,6 +3,9 @@
 
 from Queue import Queue
 from random import randint
+from robogame_engine.commands import TurnCommand
+
+from .states import StateStopped
 
 from .utils import logger
 from .events import (EventHearbeat, EventStoppedAtTargetPoint, EventStopped)
@@ -15,38 +18,36 @@ class GameObject(object):
     """
     TURN_SPEED = 5
     MAX_SPEED = 5
+    HEARTBEAT_INTERVAL = 5
+    __objects_count = 0
+    container = None  # инициализируется в Scene
     radius = 1
-    _objects_count = 0
-    states = ['stopped', 'turning', 'moving']
-    container = None
     animated = True
     rotatable = True
 
-    def __init__(self, pos, revolvable=True, angle=None):
+    def __init__(self, pos, angle=None):
+        GameObject.__objects_count += 1
+        self.id = GameObject.__objects_count
         self.coord = Point(pos)
-        self.target_coord = Point(0, 0)
-
+        self.target = None
         if angle is None:
             angle = randint(0, 360)
         self.vector = Vector(angle, 0)
-        self.course = self.vector.angle
-        self.revolvable = revolvable
-        self.load_value = 0
-        self._distance_cache = {}
-        self._events = Queue()
-        self._selected = False
-        self._state = 'stopped'
-        self._need_moving = False
-        # инициализируется в Scene
+        self.load_value_1 = 0
+        self.load_value_2 = 0
+        self.state = StateStopped(obj=self)
+
         if self.container is None:
             raise Exception("You must create Scene instance at first!")
         self.container.append(self)
 
-        GameObject._objects_count += 1
-        self.id = GameObject._objects_count
-        self.debug('born {coord} {vector}')
+        self._heartbeat_tics = self.HEARTBEAT_INTERVAL
+        self._distance_cache = {}
+        self._events = Queue()
+        self._commands = Queue()
+        self._selected = False
 
-        self._heartbeat_tics = 5
+        self.debug('born {coord} {vector}')
 
     def __str__(self):
         return 'obj({id}, {coord} {vector} cour={course:1f} {_state})'.format(**self.__dict__)
@@ -72,19 +73,12 @@ class GameObject(object):
     def _need_turning(self):
         return self.revolvable and int(self.course) != int(self.vector.angle)
 
-    def turn_to(self, arg1):
+    def turn_to(self, target):
         """
             Turn to the subject / in that direction
         """
-        if isinstance(arg1, GameObject) or isinstance(arg1, Point):
-            self.vector = Vector(self, arg1, 0)
-        elif isinstance(arg1, int) or isinstance(arg1, float):
-            direction = arg1
-            self.vector = Vector(direction, 0)
-        else:
-            raise Exception("use GameObject.turn_to(GameObject/Point "
-                            "or Angle). Your pass %s" % arg1)
-        self._state = 'turning'
+        command = TurnCommand(target=target)
+        self._commands.put(command)
 
     def move(self, direction, speed=3):
         """
@@ -137,21 +131,25 @@ class GameObject(object):
             Proceed one game step - do turns, movements and boundary check
         """
         self.debug('step {coord} {vector} {_state}')
-        if self.revolvable and self._state == 'turning':
-            delta = self.vector.angle - self.course
-            if abs(delta) < self.TURN_SPEED:
-                self.course = self.vector.angle
-                if self._need_moving:
-                    self._state = 'moving'
-                else:
-                    self._state = 'stopped'
-                    self._events.put(EventStopped())
-            else:
-                if -180 < delta < 0 or delta > 180:
-                    self.course -= self.TURN_SPEED
-                else:
-                    self.course += self.TURN_SPEED
-                self.course = normalise_angle(self.course)
+        while not self._commands.empty():
+            command = self._commands.get()
+            command.execute(obj=self)
+
+        # if self.revolvable and self._state == 'turning':
+        #     delta = self.vector.angle - self.course
+        #     if abs(delta) < self.TURN_SPEED:
+        #         self.course = self.vector.angle
+        #         if self._need_moving:
+        #             self._state = 'moving'
+        #         else:
+        #             self._state = 'stopped'
+        #             self._events.put(EventStopped())
+        #     else:
+        #         if -180 < delta < 0 or delta > 180:
+        #             self.course -= self.TURN_SPEED
+        #         else:
+        #             self.course += self.TURN_SPEED
+        #         self.course = normalise_angle(self.course)
 
         if self._state == 'moving':
             self.coord.add(self.vector)
@@ -182,7 +180,7 @@ class GameObject(object):
             event = EventHearbeat()
             self._events.put(event)
             self.hearbeat()
-            self._heartbeat_tics = 5
+            self._heartbeat_tics = self.HEARTBEAT_INTERVAL
 
     def _runout(self, coordinate, hight_bound=None):
         """
