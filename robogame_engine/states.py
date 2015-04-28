@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from robogame_engine.events import EventStopped
-from robogame_engine.geometry import normalise_angle
+from robogame_engine.events import EventStopped, EventStoppedAtTargetPoint
+from robogame_engine.geometry import normalise_angle, Vector
 
 
 class ObjectState(object):
@@ -9,28 +9,22 @@ class ObjectState(object):
         self.obj = obj
         self.kwargs = kwargs
 
-    def move(self, **kwargs):
-        raise NotImplementedError()
+    def move(self, target, speed):
+        self.obj.state = StateMoving(obj=self.obj, target=target, speed=speed)
 
-    def stop(self, **kwargs):
-        raise NotImplementedError()
+    def stop(self):
+        self.obj.state = StateStopped(obj=self.obj)
 
-    def turn(self, **kwargs):
-        raise NotImplementedError()
+    def turn(self, vector, target):
+        self.obj.state = StateTurning(obj=self.obj, vector=vector, target=target)
 
-    def step(self, **kwargs):
+    def step(self):
         raise NotImplementedError
 
 
 class StateTurning(ObjectState):
 
-    def move(self, **kwargs):
-        self.obj.state = StateMoving(obj=self.obj, **kwargs)
-
-    def stop(self, **kwargs):
-        self.obj.state = StateStopped(obj=self.obj, **kwargs)
-
-    def turn(self, vector, target, **kwargs):
+    def turn(self, vector, target):
         self.vector = vector
         self.target = target
 
@@ -58,30 +52,21 @@ class StateMoving(ObjectState):
         super(StateMoving, self).__init__(obj, **kwargs)
         self.target = None
 
-    def move(self, target):
-        self.target = target
+    def move(self, target, speed):
+        self.vector = Vector(self.obj.coord, self.target, speed)
 
-    def stop(self):
-        self.obj.state = StateStopped(obj=self.obj)
-
-    def turn(self, target):
-        self.obj.state = StateTurning(obj=self.obj, target=target)
+    def step(self):
+        self.obj.coord.add(self.vector)
+        if self.obj.coord.near(self.target):
+            self.obj.state = StateStopped(obj=self.obj)
+            event = EventStoppedAtTargetPoint(self.target)
+            self.obj.add_event(event)
 
 
 class StateStopped(ObjectState):
 
-    def __init__(self, obj, **kwargs):
-        super(StateStopped, self).__init__(obj, **kwargs)
-        self.obj._events.put(EventStopped())
-
-    def move(self, target):
-        self.obj.state = StateMoving(obj=self.obj)
-
     def stop(self):
         pass
-
-    def turn(self, target):
-        self.obj.state = StateTurning(obj=self.obj, target=target)
 
     def step(self):
         pass
@@ -89,13 +74,13 @@ class StateStopped(ObjectState):
 
 class StateDead(ObjectState):
 
-    def move(self, target):
+    def move(self, target, speed):
         pass
 
     def stop(self):
         pass
 
-    def turn(self, angle):
+    def turn(self, vector, target):
         pass
 
     def step(self):

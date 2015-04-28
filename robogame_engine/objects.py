@@ -3,7 +3,8 @@
 
 from Queue import Queue
 from random import randint
-from robogame_engine.commands import TurnCommand
+from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
+from robogame_engine.constants import HEARTBEAT_INTERVAL
 
 from .states import StateStopped
 
@@ -16,11 +17,9 @@ class GameObject(object):
     """
         Main game object
     """
-    TURN_SPEED = 5
-    MAX_SPEED = 5
-    HEARTBEAT_INTERVAL = 5
     __objects_count = 0
     container = None  # инициализируется в Scene
+    scene = None  # инициализируется в Scene
     radius = 1
     animated = True
     rotatable = True
@@ -41,7 +40,7 @@ class GameObject(object):
             raise Exception("You must create Scene instance at first!")
         self.container.append(self)
 
-        self._heartbeat_tics = self.HEARTBEAT_INTERVAL
+        self._heartbeat_tics = HEARTBEAT_INTERVAL
         self._distance_cache = {}
         self._events = Queue()
         self._commands = Queue()
@@ -49,115 +48,29 @@ class GameObject(object):
 
         self.debug('born {coord} {vector}')
 
-    def __str__(self):
-        return 'obj({id}, {coord} {vector} cour={course:1f} {_state})'.format(**self.__dict__)
+    def add_event(self, event):
+        self._events.put(event)
 
-    def __repr__(self):
-        return str(self)
-
-    def debug(self, pattern, **kwargs):
-        """
-            Show debug information if DEBUG mode
-        """
-        self._log(logger.debug, pattern, kwargs)
-
-    def info(self, pattern, **kwargs):
-        self._log(logger.info, pattern, kwargs)
-
-    def _log(self, log_fun, pattern, kwargs):
-        kwargs['cls'] = self.__class__.__name__
-        kwargs.update(self.__dict__)
-        pattern = '{cls}:{id}:' + pattern
-        log_fun(pattern.format(**kwargs))
-
-    def _need_turning(self):
-        return self.revolvable and int(self.course) != int(self.vector.angle)
-
-    def turn_to(self, target):
-        """
-            Turn to the subject / in that direction
-        """
-        command = TurnCommand(target=target)
+    def add_command(self, command):
         self._commands.put(command)
 
-    def move(self, direction, speed=3):
-        """
-            Set movement in the direction of <angle>, <speed>
-        """
-        if speed > self.MAX_SPEED:
-            speed = self.MAX_SPEED
-        self.vector = Vector(direction, speed)
-        self.target_coord = self.coord + self.vector * 100  # далеко-далеко...
-        self._need_moving = True
-        if self._need_turning():
-            self._state = 'turning'
-        else:
-            self._state = 'moving'
+    def proceed_events(self):
+        while not self._events.empty():
+            event = self._events.get()
+            event.handle(obj=self)
 
-    def move_at(self, target, speed=3):
-        """
-            Set movement to the specified obj/point
-            <object/point/coordinats>, <speed>
-        """
-        if isinstance(target, tuple) or isinstance(target, list):
-            target = Point(target)
-        elif isinstance(target, Point):
-            pass
-        elif isinstance(target, GameObject):
-            target = target.coord
-        else:
-            raise Exception("move_at: target %s must be coord "
-                            "or point or GameObject!" % target)
-        if speed > self.MAX_SPEED:
-            speed = self.MAX_SPEED
-        self.target_coord = target
-        self.vector = Vector(self.coord, self.target_coord, speed)
-        self._need_moving = True
-        if self._need_turning():
-            self._state = 'turning'
-        else:
-            self._state = 'moving'
+    def proceed_commands(self):
+        while not self._commands.empty():
+            command = self._commands.get()
+            command.execute()
 
-    def stop(self):
-        """
-            Unconditional stop
-        """
-        self._state = 'stopped'
-        self._need_moving = False
-        self._events.put(EventStopped())
-
-    def _game_step(self):
+    def game_step(self):
         """
             Proceed one game step - do turns, movements and boundary check
         """
         self.debug('step {coord} {vector} {_state}')
-        while not self._commands.empty():
-            command = self._commands.get()
-            command.execute(obj=self)
+        self.state.step()
 
-        # if self.revolvable and self._state == 'turning':
-        #     delta = self.vector.angle - self.course
-        #     if abs(delta) < self.TURN_SPEED:
-        #         self.course = self.vector.angle
-        #         if self._need_moving:
-        #             self._state = 'moving'
-        #         else:
-        #             self._state = 'stopped'
-        #             self._events.put(EventStopped())
-        #     else:
-        #         if -180 < delta < 0 or delta > 180:
-        #             self.course -= self.TURN_SPEED
-        #         else:
-        #             self.course += self.TURN_SPEED
-        #         self.course = normalise_angle(self.course)
-
-        if self._state == 'moving':
-            self.coord.add(self.vector)
-            if self.coord.near(self.target_coord):
-                self.stop()
-                self._events.put(EventStoppedAtTargetPoint(
-                    self.target_coord))
-        # boundary_check
         left_ro = self._runout(self.coord.x)
         if left_ro:
             self.coord.x += left_ro + 1
@@ -166,11 +79,11 @@ class GameObject(object):
         if botm_ro:
             self.coord.y += botm_ro + 1
             self.stop()
-        righ_ro = self._runout(self.coord.x, field_width)
+        righ_ro = self._runout(self.coord.x, self.scene.field_width)
         if righ_ro:
             self.coord.x -= righ_ro + 1
             self.stop()
-        top_ro = self._runout(self.coord.y, field_height)
+        top_ro = self._runout(self.coord.y, self.scene.field_height)
         if top_ro:
             self.coord.y -= top_ro + 1
             self.stop()
@@ -178,9 +91,8 @@ class GameObject(object):
         self._heartbeat_tics -= 1
         if not self._heartbeat_tics:
             event = EventHearbeat()
-            self._events.put(event)
-            self.hearbeat()
-            self._heartbeat_tics = self.HEARTBEAT_INTERVAL
+            self.add_event(event)
+            self._heartbeat_tics = HEARTBEAT_INTERVAL
 
     def _runout(self, coordinate, hight_bound=None):
         """
@@ -211,10 +123,56 @@ class GameObject(object):
         """
         return self.distance_to(obj) <= radius
 
-    def _proceed_events(self):
-        while not self._events.empty():
-            event = self._events.get()
-            event.handle(self)
+    def debug(self, pattern, **kwargs):
+        """
+            Show debug information if DEBUG mode
+        """
+        self._log(logger.debug, pattern, kwargs)
+
+    def info(self, pattern, **kwargs):
+        self._log(logger.info, pattern, kwargs)
+
+    def _log(self, log_fun, pattern, kwargs):
+        kwargs['cls'] = self.__class__.__name__
+        kwargs.update(self.__dict__)
+        pattern = '{cls}:{id}:' + pattern
+        log_fun(pattern.format(**kwargs))
+
+    def __str__(self):
+        return 'obj({id}, {coord} {vector} cour={course:1f} {_state})'.format(**self.__dict__)
+
+    def __repr__(self):
+        return str(self)
+
+    # def _need_turning(self):
+    # return self.revolvable and int(self.course) != int(self.vector.angle)
+    #
+
+    ############# Manage ###############
+
+    def turn_to(self, target):
+        """
+            Turn to the subject / in that direction
+        """
+        command = TurnCommand(obj=self, target=target)
+        self.add_command(command)
+
+    def move_at(self, target, speed=3):
+        """
+            Set movement to the specified obj/point
+            <object/point/coordinats>, <speed>
+        """
+        command = MoveCommand(obj=self, target=target, speed=speed)
+        self.add_command(command)
+
+    def stop(self):
+        """
+            Unconditional stop
+        """
+        self.add_command(command=StopCommand(obj=self))
+        self.add_event(event=EventStopped())
+
+    ############# Events ###############
 
     def stopped(self):
         """
@@ -250,7 +208,7 @@ class ObjectState:
         '_layer',
         '_selectable',
         '_animated'
-        )
+    )
 
     def __init__(self, obj):
         for param in self.params:

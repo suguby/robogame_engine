@@ -3,9 +3,7 @@
 from multiprocessing import Pipe, Process
 import time
 
-from robogame_engine.states import ObjectState
-from robogame_engine import events, constants
-import geometryb
+from robogame_engine import events, constants, GameObject
 from robogame_engine.user_interface import UserInterface
 
 
@@ -14,12 +12,16 @@ class Scene:
         Game scene. Container for all game objects.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, field=None):
         self.objects = []
-        objects.GameObject.container = self.objects
+        GameObject.container = self.objects
+        GameObject.scene = self
         self.hold_state = False  # режим пошаговой отладки
         self._step = 0
         self.name = name
+        if field is None:
+            field = (1200, 600)
+        self.field_width, self.field_height = field
         self.parent_conn = None
         self.ui = None
 
@@ -28,7 +30,10 @@ class Scene:
             Proceed objects states, collision detection, hits
             and radars discovering
         """
-        pass
+        for obj in self.objects:
+            obj.proceed_events()
+            obj.proceed_commands()
+            obj.game_step()
 
     def get_objects_state(self):
         """
