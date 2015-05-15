@@ -3,8 +3,8 @@
 
 from Queue import Queue
 from random import randint
+from robogame_engine import constants
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
-from robogame_engine.constants import HEARTBEAT_INTERVAL
 
 from .states import StateStopped
 
@@ -21,7 +21,7 @@ class GameObject(object):
     container = None  # инициализируется в Scene
     scene = None  # инициализируется в Scene
     radius = 1
-    animated = True
+    animated = False
     rotatable = True
 
     def __init__(self, pos, angle=None):
@@ -40,13 +40,21 @@ class GameObject(object):
             raise Exception("You must create Scene instance at first!")
         self.container.append(self)
 
-        self._heartbeat_tics = HEARTBEAT_INTERVAL
-        self._distance_cache = {}
+        self._heartbeat_tics = constants.HEARTBEAT_INTERVAL
+        self._distance_cache = {} # TODO перенести в класс
         self._events = Queue()
         self._commands = Queue()
         self._selected = False
 
         self.debug('born {coord} {vector}')
+
+    @property
+    def x(self):
+        return self.coord.x
+
+    @property
+    def y(self):
+        return self.coord.y
 
     def add_event(self, event):
         self._events.put(event)
@@ -92,7 +100,7 @@ class GameObject(object):
         if not self._heartbeat_tics:
             event = EventHearbeat()
             self.add_event(event)
-            self._heartbeat_tics = HEARTBEAT_INTERVAL
+            self._heartbeat_tics = constants.HEARTBEAT_INTERVAL
 
     def _runout(self, coordinate, hight_bound=None):
         """
@@ -117,10 +125,12 @@ class GameObject(object):
         raise Exception("GameObject.distance_to: obj %s "
                         "must be GameObject or Point!" % (obj,))
 
-    def near(self, obj, radius=20):
+    def near(self, obj, radius=None):
         """
             Is it near to the <object/point>?
         """
+        if radius is None:
+            radius = constants.NEAR_RADIUS
         return self.distance_to(obj) <= radius
 
     def debug(self, pattern, **kwargs):
