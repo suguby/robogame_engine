@@ -12,13 +12,10 @@ from pygame.transform import flip
 from pygame.draw import line, circle, rect, aalines
 from pygame.display import set_caption, set_mode
 from pygame.time import Clock
-import common
-from robogame_engine import constants
+from .constants import DEBUG
 from robogame_engine.geometry import Point
 
 
-_debug = common._debug
-log = common.log
 _max_layers = 5
 _sprites_by_layer = [Group() for i in range(_max_layers + 1)]
 _images_cash = {}
@@ -28,6 +25,9 @@ class RoboSprite(DirtySprite):
     """
         Show sprites on screen
     """
+    METER_1_COLOR = (0, 255, 70)
+    METER_2_COLOR = (232, 129, 31)
+
     _img_file_name = 'empty.png'
     _layer = 0
 
@@ -57,9 +57,8 @@ class RoboSprite(DirtySprite):
             0
         )
         self._id_font = Font(None, 27)
-#        self._armor_pixels = 0
         self._selected = False
-        # для отрисовки взрывов
+        # for animated sprites
         self._animcycle = 3
         self._drawed_count = 0
 
@@ -73,18 +72,13 @@ class RoboSprite(DirtySprite):
     def __repr__(self):
         return str(self)
 
-    def _show_armor(self):
-        if hasattr(self.state, 'armor') and self.state.armor > 0:
+    def _show_meters(self):
+        if hasattr(self.state, 'meter_1') and self.state.meter_1 > 0:
             bar_px = int((self.state.armor / 100.0) * self.rect.width)
-            line(self.image, (0, 255, 70), (0, 3), (bar_px, 3), 3)
-
-    def _show_gun_heat(self):
-        if hasattr(self.state, 'gun_heat') and self.state.gun_heat > 0:
-            max_heat = float(constants.tank_gun_heat_after_fire)
-            bar_px = int(((max_heat - self.state.gun_heat)
-                          / max_heat) * self.rect.width)
-            line(self.image, (232, 129, 31), (0, 5),
-                (bar_px, 5), 2)
+            line(self.image, self.METER_1_COLOR, (0, 3), (bar_px, 3), 3)
+        if hasattr(self.state, 'meter_2') and self.state.meter_2 > 0:
+            bar_px = int((self.state.armor / 100.0) * self.rect.width)
+            line(self.image, self.METER_2_COLOR, (0, 5), (bar_px, 5), 2)
 
     def _show_selected(self):
         if self._selected:
@@ -93,18 +87,18 @@ class RoboSprite(DirtySprite):
             rect(self.image,
                 self._debug_color, outline_rect, 1)
 
-    def _show_tank_id(self):
-        if hasattr(self, 'state') and hasattr(self.state, 'gun_heat'):
-            id_image = self._id_font.render(str(self.id),
+    def _show_id(self):
+        if hasattr(self.state, 'id'):
+            id_image = self._id_font.render(str(self.state.id),
                 0,
                 self._debug_color)
             self.image.blit(id_image, (5, 5))
 
     def _show_detection(self):
-        if hasattr(self.state, '_detected_by'):
+        if hasattr(self.state, 'detected_by'):
             radius = 0
-            for obj in self.state._detected_by:
-                if obj._selected:
+            for obj in self.state.detected_by:
+                if obj.selected:
                     radius += 6
                     circle(self.image,
                         obj._debug_color,
@@ -119,34 +113,34 @@ class RoboSprite(DirtySprite):
             Do not call in your code!
         """
         self.rect.center = self.state.coord.to_screen()
-        if self.state._revolvable:
+        if self.state.revolvable:
             self.image = _rotate_about_center(self.images[0],
-                                              self.state._img_file_name,
+                                              self.state.img_file_name,
                                               self.state.course)
-        elif self.state._animated:
+        elif self.state.animated:
+            # TODO брать таки кадры из гифок
             self._drawed_count += 1
             self.image = self.images[self._drawed_count // self._animcycle % 4]
         else:
             self.image = self.images[0].copy()
 
-        self._show_armor()
-        self._show_gun_heat()
+        self._show_meters()
         self._show_selected()
-        if common._debug:
-            self._show_tank_id()
+        if hasattr(self.state, 'debug') and self.state.debug:
+            self._show_id()
             self._show_detection()
 
 
-class UserInterfaceState:
+class UserInput:
     """
-        UI state class - key pressing and mouse select
+        Key pressing and mouse select
     """
     def __init__(self):
         self.one_step = False
         self.switch_debug = False
         self.the_end = False
         self.selected_ids = []
-        # внутренние для хранения состояния мыши
+
         self._mouse_pos = None
         self._mouse_buttons = None
 
@@ -196,7 +190,7 @@ class UserInterface:
         self.debug = False
 
         self.game_objects = {}
-        self.ui_state = UserInterfaceState()
+        self.ui_state = UserInput()
 
     def run(self, child_conn):
         self.child_conn = child_conn
@@ -266,7 +260,7 @@ class UserInterface:
             check UI state - if changed it will return UI state
         """
         prev_ui_state = self.ui_state
-        self.ui_state = UserInterfaceState()
+        self.ui_state = UserInput()
 
         for event in pygame.event.get():
             if event.type == KEYDOWN and event.key == K_f:
@@ -381,10 +375,11 @@ class Fps(DirtySprite):
     """
     _layer = 5
 
-    def __init__(self, color=(255, 255, 255)):
+    def __init__(self, color=(255, 255, 255), *groups):
         """
-            Make indicator
-        """
+                Make indicator
+            """
+        super(Fps, self).__init__(*groups)
         pygame.sprite.Sprite.__init__(self, self.sprite_containers)
         self.show = False
         self.font = pygame.font.Font(None, 27)

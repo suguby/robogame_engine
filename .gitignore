@@ -5,3 +5,4 @@ syntax: glob
 *.egg-info
 dist
 build
+robogame_engine/constants_local.py

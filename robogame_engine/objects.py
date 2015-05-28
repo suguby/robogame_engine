@@ -17,12 +17,21 @@ class GameObject(object):
     """
         Main game object
     """
-    __objects_count = 0
-    container = None  # инициализируется в Scene
-    scene = None  # инициализируется в Scene
     radius = 1
     animated = False
     rotatable = True
+    meter_1 = None
+    meter_2 = None
+    sprite_filename = None  # переопределить в наследниках
+
+    __objects_count = 0
+    __container = None
+    __scene = None
+
+    @classmethod
+    def set_scene(cls, scene, container):
+        cls.__scene = scene
+        cls.__container = container
 
     def __init__(self, pos, angle=None):
         GameObject.__objects_count += 1
@@ -36,9 +45,9 @@ class GameObject(object):
         self.load_value_2 = 0
         self.state = StateStopped(obj=self)
 
-        if self.container is None:
+        if self.__container is None:
             raise Exception("You must create Scene instance at first!")
-        self.container.append(self)
+        self.__container.append(self)
 
         self._heartbeat_tics = constants.HEARTBEAT_INTERVAL
         self._distance_cache = {} # TODO перенести в класс
@@ -87,11 +96,11 @@ class GameObject(object):
         if botm_ro:
             self.coord.y += botm_ro + 1
             self.stop()
-        righ_ro = self._runout(self.coord.x, self.scene.field_width)
+        righ_ro = self._runout(self.coord.x, self.__scene.field_width)
         if righ_ro:
             self.coord.x -= righ_ro + 1
             self.stop()
-        top_ro = self._runout(self.coord.y, self.scene.field_height)
+        top_ro = self._runout(self.coord.y, self.__scene.field_height)
         if top_ro:
             self.coord.y -= top_ro + 1
             self.stop()
@@ -203,32 +212,16 @@ class GameObject(object):
         self.info('heartbeat')
 
 
-class ObjectState:
+class ObjectStatus:
     """
         Hold game object state, useful for exchange between processes
     """
-    params = (
-        'id',
-        'coord',
-        'course',
-        'armor',
-        'gun_heat',
-        '_revolvable',
-        '_img_file_name',
-        '_layer',
-        '_selectable',
-        '_animated'
-    )
 
     def __init__(self, obj):
-        for param in self.params:
-            if hasattr(obj, param):
-                val = getattr(obj, param)
-                setattr(self, param, val)
-        if hasattr(obj, '_detected_by'):
-            self._detected_by = [
-                detected_by_obj.id
-                for detected_by_obj in obj._detected_by
-            ]
-        else:
-            self._detected_by = []
+        for attr_name in dir(obj):
+            if attr_name.startswith('_'):
+                continue
+            attr = getattr(obj, attr_name)
+            if callable(attr):
+                continue
+            setattr(self, attr_name, attr)

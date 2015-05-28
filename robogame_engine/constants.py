@@ -13,3 +13,10 @@ HEARTBEAT_INTERVAL = 5
 # engine constants
 GAME_STEP_MIN_TIME = 0.015
 NEAR_RADIUS = 20
+
+DEBUG = False
+
+try:
+    from .costants_local import *
+except ImportError:
+    pass

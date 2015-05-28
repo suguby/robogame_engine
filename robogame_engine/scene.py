@@ -14,8 +14,7 @@ class Scene:
 
     def __init__(self, name, field=None):
         self.objects = []
-        GameObject.container = self.objects
-        GameObject.scene = self
+        GameObject.set_scene(scene=self, container=self.objects)
         self.hold_state = False  # режим пошаговой отладки
         self._step = 0
         self.name = name
