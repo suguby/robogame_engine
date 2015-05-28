@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import copy
+import math
+import random
 from robogame_engine import GameObject, Scene
+from robogame_engine.geometry import Point
 
 
 class HoneyHolder():
@@ -156,11 +159,11 @@ class Beegarden(Scene):
             field.reduce(dh=beehive.h)
         if field.w < flower.w or field.h < flower.h:
             raise Exception("Too little field...")
-        if DEBUG:
+        if constants.DEBUG:
             print "Initial field", field
 
         cell = Rect()
-        side = sqrt(field.w * field.h * flower.h / float(flowers_count * flower.w))
+        side = math.sqrt(field.w * field.h * flower.h / float(flowers_count * flower.w))
         cell.w = int(side * flower.w / flower.h)
         cell.h = int(side)
         if DEBUG:
