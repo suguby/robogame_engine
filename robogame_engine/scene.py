@@ -12,7 +12,7 @@ class Scene:
         Game scene. Container for all game objects.
     """
 
-    def __init__(self, name, field=None):
+    def __init__(self, name='RoboGame', field=None, **kwargs):
         self.objects = []
         GameObject.set_scene(scene=self, container=self.objects)
         self.hold_state = False  # режим пошаговой отладки
@@ -23,6 +23,10 @@ class Scene:
         self.field_width, self.field_height = field
         self.parent_conn = None
         self.ui = None
+        self.prepare(**kwargs)
+
+    def prepare(self, **kwargs):
+        raise NotImplementedError()
 
     def game_step(self):
         """
@@ -67,11 +71,11 @@ class Scene:
 
                 # переключение режима отладки
                 if ui_state.switch_debug:
-                    if common._debug:  # были в режиме отладки
+                    if constants.DEBUG:  # были в режиме отладки
                         self.hold_state = False
                     else:
                         self.hold_state = True
-                    common._debug = not common._debug
+                    constants.DEBUG = not constants.DEBUG
 
             # шаг игры, если надо
             if not self.hold_state or (ui_state and ui_state.one_step):

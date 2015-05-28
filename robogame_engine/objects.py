@@ -33,10 +33,10 @@ class GameObject(object):
         cls.__scene = scene
         cls.__container = container
 
-    def __init__(self, pos, angle=None):
+    def __init__(self, pos=None, angle=None):
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
-        self.coord = Point(pos)
+        self.coord = Point(pos) if pos else Point(0, 0)
         self.target = None
         if angle is None:
             angle = randint(0, 360)
