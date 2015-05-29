@@ -26,11 +26,11 @@ class GameObject(object):
 
     __objects_count = 0
     __container = None
-    __scene = None
+    _scene = None
 
     @classmethod
     def set_scene(cls, scene, container):
-        cls.__scene = scene
+        cls._scene = scene
         cls.__container = container
 
     def __init__(self, pos=None, angle=None):
@@ -85,7 +85,7 @@ class GameObject(object):
         """
             Proceed one game step - do turns, movements and boundary check
         """
-        self.debug('step {coord} {vector} {_state}')
+        self.debug('step {coord} {vector} {state}')
         self.state.step()
 
         left_ro = self._runout(self.coord.x)
@@ -96,11 +96,11 @@ class GameObject(object):
         if botm_ro:
             self.coord.y += botm_ro + 1
             self.stop()
-        righ_ro = self._runout(self.coord.x, self.__scene.field_width)
+        righ_ro = self._runout(self.coord.x, self._scene.field_width)
         if righ_ro:
             self.coord.x -= righ_ro + 1
             self.stop()
-        top_ro = self._runout(self.coord.y, self.__scene.field_height)
+        top_ro = self._runout(self.coord.y, self._scene.field_height)
         if top_ro:
             self.coord.y -= top_ro + 1
             self.stop()

@@ -51,6 +51,7 @@ class StateMoving(ObjectState):
     def __init__(self, obj, **kwargs):
         super(StateMoving, self).__init__(obj, **kwargs)
         self.target = None
+        self.vector = Vector(self.obj.coord, self.target, 3)
 
     def move(self, target, speed):
         self.vector = Vector(self.obj.coord, self.target, speed)

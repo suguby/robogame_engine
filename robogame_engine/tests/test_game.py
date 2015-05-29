@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
-import copy
+
 import math
 import random
-from robogame_engine import GameObject, Scene
+from robogame_engine import GameObject, Scene, constants
 from robogame_engine.geometry import Point
 
 
-class HoneyHolder():
+class HoneyHolder:
     """Класс объекта, который может нести мёд"""
     _honey_speed = 1
+    _honey = 0
+    _honey_max = 0
+    _honey_source = None
+    _honey_state = 'hold'
 
     honey = property(lambda self: self._honey, doc="""Количество мёда у объекта""")
 
-    def __init__(self, honey_loaded, honey_max):
+    def set_inital_honey(self, loaded, maximum):
         """Задать начальние значения: honey_loaded - сколько изначально мёда, honey_max - максимум"""
-        self._honey = honey_loaded
-        if honey_max == 0:
+        self._honey = loaded
+        if maximum == 0:
             raise Exception("honey_max can't be zero!")
-        self._honey_max = honey_max
-
-        self._honey_source = None
-        self._honey_state = 'hold'
+        self._honey_max = maximum
 
     def _end_exchange(self, event):
         self._honey_source = None
@@ -84,17 +85,60 @@ class HoneyHolder():
         return self.honey >= self._honey_max
 
 
-class Bee(GameObject, HoneyHolder):
-    sprite_filename = 'bee.jpg'  # TODO вынести в тему, по имени класса
+class SceneObjectsGetter:
+    _objects_holder = None
+    __flowers = None
+    __bees = None
+    __beehives = None
 
-    def __init__(self, pos):
+    @property
+    def flowers(self):
+        if self.__flowers is None:
+            self.__flowers = self._objects_holder.get_objects_by_type(cls=Flower)
+        return self.__flowers
+
+    @property
+    def bees(self):
+        if self.__bees is None:
+            self.__bees = self._objects_holder.get_objects_by_type(cls=Bee)
+        return self.__bees
+
+    @property
+    def beehives(self):
+        if self.__beehives is None:
+            self.__beehives = self._objects_holder.get_objects_by_type(cls=BeeHive)
+        return self.__beehives
+
+
+class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
+    _MAX_HONEY = 100
+    sprite_filename = 'bee.jpg'  # TODO вынести в тему, по имени класса
+    __my_beehive = None
+
+    def __init__(self, pos=None):
         super(Bee, self).__init__(pos)
+        self.set_inital_honey(loaded=0, maximum=self._MAX_HONEY)
+        self._objects_holder = self._scene
+
+    @property
+    def my_beehive(self):
+        if self.__my_beehive is None:
+            self.__my_beehive = self._scene.get_objects_by_type(Flower)
+        return self.__my_beehive
 
     def update(self):
         pass
 
 class Flower(GameObject, HoneyHolder):
     sprite_filename = 'flower.jpg'
+    _MIN_HONEY = 100
+    _MAX_HONEY = 200
+
+    def __init__(self, pos, max_honey=None):
+        super(Flower, self).__init__(pos=pos)
+        if max_honey is None:
+            max_honey = random.randint(self._MIN_HONEY, self._MIN_HONEY)
+        self.set_inital_honey(loaded=0, maximum=max_honey)
 
     def update(self):
         pass
@@ -102,6 +146,9 @@ class Flower(GameObject, HoneyHolder):
 class BeeHive(GameObject, HoneyHolder):
     sprite_filename = 'beehive.jpg'
 
+    def __init__(self, pos, max_honey):
+        super(BeeHive, self).__init__(pos=pos)
+        self.set_inital_honey(loaded=0, maximum=max_honey)
 
 class Rect:
 
@@ -123,10 +170,9 @@ class Rect:
         return "{}x{} ({}, {})".format(self.w, self.h, self.x, self.y)
 
 
-class Beegarden(Scene):
-    __bees = []
-    __flowers = []
-    __beehives = []
+class Beegarden(Scene, SceneObjectsGetter):
+    _FLOWER_JITTER = 10
+
 
     def prepare(self, speed=5, flowers_count=5, beehives_count=1):
         self._place_flowers_and_beehives(
@@ -134,24 +180,13 @@ class Beegarden(Scene):
             beehives_count=beehives_count,
         )
         self._set_game_speed(speed=speed)
-
-    @property
-    def bees(self):
-        return copy.copy(self.__bees)
-
-    @property
-    def flowers(self):
-        return copy.copy(self.__flowers)
-
-    @property
-    def beehives(self):
-        return copy.copy(self.__beehives)
+        self._objects_holder = self
 
     def _place_flowers_and_beehives(self, flowers_count, beehives_count):
 
         flower = Rect(w=104, h=100)  # TODO получать значения из спрайтов
         beehive = Rect(w=150, h=117)
-        field = Rect(w=Scene.screen_width, h=Scene.screen_height)
+        field = Rect(w=self.field_width, h=self.field_height)
         field.reduce(dw=beehive.w, dh=beehive.h)
         if beehives_count >= 2:
             field.reduce(dw=beehive.w)
@@ -166,7 +201,7 @@ class Beegarden(Scene):
         side = math.sqrt(field.w * field.h * flower.h / float(flowers_count * flower.w))
         cell.w = int(side * flower.w / flower.h)
         cell.h = int(side)
-        if DEBUG:
+        if constants.DEBUG:
             print "Initial cell", cell
 
         cells_in_width, cells_in_height, cells_count = 5, 5, 25
@@ -182,19 +217,19 @@ class Beegarden(Scene):
                 cell.w -= 1
             else:
                 cell.h -= 1
-        if DEBUG:
+        if constants.DEBUG:
             print "Adjusted cell", cell, cells_in_width, cells_in_height
 
         cell_numbers = [i for i in range(cells_count)]
 
-        jit_box = Rect(w=int(cell.w * self._flower_jitter), h=int(cell.h * self._flower_jitter))
+        jit_box = Rect(w=int(cell.w * self._FLOWER_JITTER), h=int(cell.h * self._FLOWER_JITTER))
         jit_box.shift(dx=(cell.w - jit_box.w) // 2, dy=(cell.h - jit_box.h) // 2)
-        if DEBUG:
+        if constants.DEBUG:
             print "Jit box", jit_box
 
         field.w = cells_in_width * cell.w + jit_box.w
         field.h = cells_in_height * cell.h + jit_box.h
-        if DEBUG:
+        if constants.DEBUG:
             print "Adjusted field", field
 
         beehives_w = beehive.w
@@ -204,13 +239,14 @@ class Beegarden(Scene):
         if beehives_count >= 3:
             beehives_h = beehive.h * 2
 
-        field.x = beehive.w + (Scene.screen_width - field.w - beehives_w) // 2.0 + flower.w // 3
-        field.y = beehive.h + (Scene.screen_height - field.h - beehives_h) // 2.0
-        if DEBUG:
+        field.x = beehive.w + (self.field_width - field.w - beehives_w) // 2.0 + flower.w // 3
+        field.y = beehive.h + (self.field_height - field.h - beehives_h) // 2.0
+        if constants.DEBUG:
             print "Shifted field", field
 
         max_honey = 0
-        while len(self.__flowers) < flowers_count:
+        flowers = []
+        while len(flowers) < flowers_count:
             cell_number = random.choice(cell_numbers)
             cell_numbers.remove(cell_number)
             cell.x = (cell_number % cells_in_width) * cell.w
@@ -219,21 +255,21 @@ class Beegarden(Scene):
             dy = random.randint(0, jit_box.h)
             pos = Point(field.x + cell.x + dx, field.y + cell.y + dy)
             flower = Flower(pos)  # автоматически добавит к списку цаетов
+            flowers.append(flower)
             max_honey += flower.honey
         max_honey /= float(beehives_count)
         max_honey = int(round((max_honey / 1000.0) * 1.3)) * 1000
         if max_honey < 1000:
             max_honey = 1000
-        max_honey=5000
         for i in range(beehives_count):
             if i == 0:
                 pos = Point(90, 75)
             elif i == 1:
-                pos = Point(Scene.screen_width - 90, 75)
+                pos = Point(self.field_width - 90, 75)
             elif i == 2:
-                pos = Point(90, Scene.screen_height - 75)
+                pos = Point(90, self.field_height - 75)
             else:
-                pos = Point(Scene.screen_width - 90, Scene.screen_height - 75)
+                pos = Point(self.field_width - 90, self.field_height - 75)
             BeeHive(pos=pos, max_honey=max_honey)  # сам себя добавит
 
     @classmethod
@@ -248,9 +284,8 @@ class Beegarden(Scene):
                 return None
 
     def _set_game_speed(self, speed):
-        NEAR_RADIUS = self.get_theme_constant('NEAR_RADIUS')
-        if speed > NEAR_RADIUS:
-            speed = NEAR_RADIUS
+        if speed > constants.NEAR_RADIUS:
+            speed = constants.NEAR_RADIUS
         GameObject._default_speed = speed
         honey_speed = int(speed / 5.0)
         if honey_speed < 1:
@@ -289,7 +324,7 @@ class WorkerBee(Bee):
             elif self.honey > 0:
                 self.move_at(self.my_beehive)
             else:
-                i = random_number(0, len(self.flowers) - 1)
+                i = random.randint(0, len(self.flowers) - 1)
                 self.move_at(self.flowers[i])
 
     def on_born(self):
@@ -297,7 +332,7 @@ class WorkerBee(Bee):
         self.go_next_flower()
 
     def on_stop_at_flower(self, flower):
-        for bee in self.scene.bees:
+        for bee in self.bees:
             if not isinstance(bee, self.__class__) and self.near(bee):
                 self.sting(bee)
         else:

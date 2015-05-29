@@ -3,7 +3,8 @@
 from multiprocessing import Pipe, Process
 import time
 
-from robogame_engine import events, constants, GameObject
+from robogame_engine import constants
+from robogame_engine.objects import ObjectStatus, GameObject
 from robogame_engine.user_interface import UserInterface
 
 
@@ -28,6 +29,9 @@ class Scene:
     def prepare(self, **kwargs):
         raise NotImplementedError()
 
+    def get_objects_by_type(self, cls):
+        return [obj for obj in self.objects if isinstance(obj, cls)]
+
     def game_step(self):
         """
             Proceed objects states, collision detection, hits
@@ -38,11 +42,11 @@ class Scene:
             obj.proceed_commands()
             obj.game_step()
 
-    def get_objects_state(self):
+    def get_objects_status(self):
         """
 
         """
-        return []
+        return [ObjectStatus(obj) for obj in self.objects]
 
     def go(self):
         """
@@ -82,15 +86,14 @@ class Scene:
                 self._step += 1
                 self.game_step()
                 # отсылаем новое состояние обьектов в UI
-                objects_state = self.get_objects_state()
-                self.parent_conn.send(objects_state)
+                objects_status = self.get_objects_status()
+                self.parent_conn.send(objects_status)
 
             # вычисляем остаток времени на сон
             cycle_time = time.time() - cycle_begin
             cycle_time_rest = constants.GAME_STEP_MIN_TIME - cycle_time
             if cycle_time_rest > 0:
                 # о! есть время поспать... :)
-                # print "sleep for %.6f" % cycle_time_rest
                 time.sleep(cycle_time_rest)
 
         # ждем пока потомки помрут

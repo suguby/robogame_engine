@@ -13,6 +13,7 @@ from pygame.draw import line, circle, rect, aalines
 from pygame.display import set_caption, set_mode
 from pygame.time import Clock
 from .constants import DEBUG
+from robogame_engine import constants
 from robogame_engine.geometry import Point
 
 
