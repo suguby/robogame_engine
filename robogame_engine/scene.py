@@ -13,16 +13,16 @@ class Scene:
         Game scene. Container for all game objects.
     """
 
-    def __init__(self, name='RoboGame', field=None, theme_module=None, **kwargs):
+    def __init__(self, name='RoboGame', field=None, theme_mod_path=None, **kwargs):
         self.objects = []
         GameObject.set_scene(scene=self, container=self.objects)
+        theme.set_theme_module(mod_path=theme_mod_path)
         self.hold_state = False  # режим пошаговой отладки
         self._step = 0
         self.name = name
         if field is None:
             field = (1200, 600)
         self.field_width, self.field_height = field
-        theme.set_theme_module(mod_path=theme_module)
         self.parent_conn = None
         self.ui = None
         self.prepare(**kwargs)
@@ -104,5 +104,5 @@ class Scene:
 
 
 def start_ui(name, child_conn):
-    ui = UserInterface(name)
+    ui = UserInterface(name, theme)
     ui.run(child_conn)

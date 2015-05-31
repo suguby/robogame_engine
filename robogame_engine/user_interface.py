@@ -19,6 +19,7 @@ _max_layers = 5
 _sprites_by_layer = [Group() for i in range(_max_layers + 1)]
 _images_cash = {}
 
+theme = None  # global constants source, inited in UI.__init__
 
 class RoboSprite(DirtySprite):
     """
@@ -159,21 +160,22 @@ class UserInterface:
     """
     _max_fps = 50  # ограничиваем для стабильности отклика клавы/мыши
 
-    def __init__(self, name):
+    def __init__(self, name, current_theme):
         """
             Make game window
         """
-        global SCREENRECT
+        global theme
+        theme = current_theme
 
         pygame.init()
         SCREENRECT = Rect((0, 0),
-                          (theme.field_width, theme.field_height))
+                          (theme.FIELD_WIDTH, theme.FIELD_HEIGHT))
         self.screen = set_mode(SCREENRECT.size)
         set_caption(name)
 
         self.background = pygame.Surface(self.screen.get_size())  # и ее размер
         self.background = self.background.convert()
-        self.background.fill(theme.background_color)  # заполняем цветом
+        self.background.fill(theme.BACKGROUND_COLOR)  # заполняем цветом
         self.clear_screen()
 
         self.all = pygame.sprite.LayeredUpdates()
@@ -190,6 +192,8 @@ class UserInterface:
 
         self.game_objects = {}
         self.ui_state = UserInput()
+
+        self._debug = False
 
     def run(self, child_conn):
         self.child_conn = child_conn
@@ -281,11 +285,11 @@ class UserInterface:
         self._select_objects()
 
         if self.ui_state.switch_debug:
-            if common._debug:
+            if self._debug:
                 # были в режиме отладки
                 self.clear_screen()
             # переключаем и тут тоже - потому что отдельный процесс
-            common._debug = not common._debug
+            self._debug = not self._debug
 
         return self.ui_state != prev_ui_state
 
@@ -303,7 +307,7 @@ class UserInterface:
                    obj.rect.collidepoint(self.ui_state._mouse_pos):
                     # координаты экранные
                     obj._selected = not obj._selected
-                elif not common._debug:
+                elif not self._debug:
                     # возможно выделение множества танков
                     # только на режиме отладки
                     obj._selected = False
@@ -348,7 +352,7 @@ class UserInterface:
         self.all.update()
 
         #draw the scene
-        if common._debug:
+        if self._debug:
             self.screen.blit(self.background, (0, 0))
             dirty = self.all.draw(self.screen)
             for obj in self.all:
@@ -385,7 +389,7 @@ class Fps(DirtySprite):
         self.color = color
         self.image = self.font.render('-', 0, self.color)
         self.rect = self.image.get_rect()
-        self.rect = self.rect.move(theme.field_width - 100, 10)
+        self.rect = self.rect.move(theme.FIELD_WIDTH - 100, 10)
         self.fps = []
 
     def update(self):

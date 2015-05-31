@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from robogame_engine.geometry import Point, Vector
+from robogame_engine.theme import theme
 
 
 class Command(object):
@@ -26,8 +27,8 @@ class MoveCommand(Command):
             self.target = target.coord
         else:
             raise Exception("Target %s must Point or GameObject!" % target)
-        if speed is None or speed > MAX_SPEED:
-            self.speed = MAX_SPEED
+        if speed is None or speed > theme.MAX_SPEED:
+            self.speed = theme.MAX_SPEED
         else:
             self.speed = speed
 
