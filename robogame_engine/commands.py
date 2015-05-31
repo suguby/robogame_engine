@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from robogame_engine.constants import MAX_SPEED
 from robogame_engine.geometry import Point, Vector
 
 

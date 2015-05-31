@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 import math
 
-from robogame_engine import constants
+from robogame_engine.theme import theme
 
 
 def from_screen(coord):
     """
         Convert coordinates from the screen
     """
-    return coord[0], constants.field_height - coord[1]
+    return coord[0], theme.field_height - coord[1]
 
 
 def normalise_angle(a):
@@ -67,7 +67,7 @@ class Point():
         """
             Convert coordinates to display
         """
-        return int(self.x), constants.field_height - int(self.y)
+        return int(self.x), theme.field_height - int(self.y)  # TODO в константу
 
     def add(self, vector):
         """

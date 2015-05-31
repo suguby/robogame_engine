@@ -3,14 +3,13 @@
 
 from Queue import Queue
 from random import randint
-from robogame_engine import constants
+
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
-
+from robogame_engine.theme import theme
 from .states import StateStopped
-
 from .utils import logger
-from .events import (EventHearbeat, EventStoppedAtTargetPoint, EventStopped)
-from .geometry import Point, Vector, normalise_angle
+from .events import (EventHearbeat, EventStopped)
+from .geometry import Point, Vector
 
 
 class GameObject(object):
@@ -49,8 +48,8 @@ class GameObject(object):
             raise Exception("You must create Scene instance at first!")
         self.__container.append(self)
 
-        self._heartbeat_tics = constants.HEARTBEAT_INTERVAL
-        self._distance_cache = {} # TODO перенести в класс
+        self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
+        self._distance_cache = {}  # TODO перенести в класс
         self._events = Queue()
         self._commands = Queue()
         self._selected = False
@@ -109,7 +108,7 @@ class GameObject(object):
         if not self._heartbeat_tics:
             event = EventHearbeat()
             self.add_event(event)
-            self._heartbeat_tics = constants.HEARTBEAT_INTERVAL
+            self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
 
     def _runout(self, coordinate, hight_bound=None):
         """
@@ -139,7 +138,7 @@ class GameObject(object):
             Is it near to the <object/point>?
         """
         if radius is None:
-            radius = constants.NEAR_RADIUS
+            radius = theme.NEAR_RADIUS
         return self.distance_to(obj) <= radius
 
     def debug(self, pattern, **kwargs):

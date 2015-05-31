@@ -2,8 +2,10 @@
 
 import math
 import random
-from robogame_engine import GameObject, Scene, constants
+
+from robogame_engine import GameObject, Scene
 from robogame_engine.geometry import Point
+from robogame_engine.theme import theme
 
 
 class HoneyHolder:
@@ -194,14 +196,14 @@ class Beegarden(Scene, SceneObjectsGetter):
             field.reduce(dh=beehive.h)
         if field.w < flower.w or field.h < flower.h:
             raise Exception("Too little field...")
-        if constants.DEBUG:
+        if theme.DEBUG:
             print "Initial field", field
 
         cell = Rect()
         side = math.sqrt(field.w * field.h * flower.h / float(flowers_count * flower.w))
         cell.w = int(side * flower.w / flower.h)
         cell.h = int(side)
-        if constants.DEBUG:
+        if theme.DEBUG:
             print "Initial cell", cell
 
         cells_in_width, cells_in_height, cells_count = 5, 5, 25
@@ -217,19 +219,19 @@ class Beegarden(Scene, SceneObjectsGetter):
                 cell.w -= 1
             else:
                 cell.h -= 1
-        if constants.DEBUG:
+        if theme.DEBUG:
             print "Adjusted cell", cell, cells_in_width, cells_in_height
 
         cell_numbers = [i for i in range(cells_count)]
 
         jit_box = Rect(w=int(cell.w * self._FLOWER_JITTER), h=int(cell.h * self._FLOWER_JITTER))
         jit_box.shift(dx=(cell.w - jit_box.w) // 2, dy=(cell.h - jit_box.h) // 2)
-        if constants.DEBUG:
+        if theme.DEBUG:
             print "Jit box", jit_box
 
         field.w = cells_in_width * cell.w + jit_box.w
         field.h = cells_in_height * cell.h + jit_box.h
-        if constants.DEBUG:
+        if theme.DEBUG:
             print "Adjusted field", field
 
         beehives_w = beehive.w
@@ -241,7 +243,7 @@ class Beegarden(Scene, SceneObjectsGetter):
 
         field.x = beehive.w + (self.field_width - field.w - beehives_w) // 2.0 + flower.w // 3
         field.y = beehive.h + (self.field_height - field.h - beehives_h) // 2.0
-        if constants.DEBUG:
+        if theme.DEBUG:
             print "Shifted field", field
 
         max_honey = 0
@@ -284,8 +286,8 @@ class Beegarden(Scene, SceneObjectsGetter):
                 return None
 
     def _set_game_speed(self, speed):
-        if speed > constants.NEAR_RADIUS:
-            speed = constants.NEAR_RADIUS
+        if speed > theme.NEAR_RADIUS:
+            speed = theme.NEAR_RADIUS
         GameObject._default_speed = speed
         honey_speed = int(speed / 5.0)
         if honey_speed < 1:

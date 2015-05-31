@@ -3,8 +3,8 @@
 from multiprocessing import Pipe, Process
 import time
 
-from robogame_engine import constants
 from robogame_engine.objects import ObjectStatus, GameObject
+from robogame_engine.theme import theme
 from robogame_engine.user_interface import UserInterface
 
 
@@ -13,7 +13,7 @@ class Scene:
         Game scene. Container for all game objects.
     """
 
-    def __init__(self, name='RoboGame', field=None, **kwargs):
+    def __init__(self, name='RoboGame', field=None, theme_module=None, **kwargs):
         self.objects = []
         GameObject.set_scene(scene=self, container=self.objects)
         self.hold_state = False  # режим пошаговой отладки
@@ -22,6 +22,7 @@ class Scene:
         if field is None:
             field = (1200, 600)
         self.field_width, self.field_height = field
+        theme.set_theme_module(mod_path=theme_module)
         self.parent_conn = None
         self.ui = None
         self.prepare(**kwargs)
@@ -75,11 +76,11 @@ class Scene:
 
                 # переключение режима отладки
                 if ui_state.switch_debug:
-                    if constants.DEBUG:  # были в режиме отладки
+                    if theme.DEBUG:  # были в режиме отладки
                         self.hold_state = False
                     else:
                         self.hold_state = True
-                    constants.DEBUG = not constants.DEBUG
+                    theme.DEBUG = not theme.DEBUG
 
             # шаг игры, если надо
             if not self.hold_state or (ui_state and ui_state.one_step):
@@ -91,7 +92,7 @@ class Scene:
 
             # вычисляем остаток времени на сон
             cycle_time = time.time() - cycle_begin
-            cycle_time_rest = constants.GAME_STEP_MIN_TIME - cycle_time
+            cycle_time_rest = theme.GAME_STEP_MIN_TIME - cycle_time
             if cycle_time_rest > 0:
                 # о! есть время поспать... :)
                 time.sleep(cycle_time_rest)

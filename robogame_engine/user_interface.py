@@ -3,19 +3,17 @@
 
 import os
 import random
-
 import pygame
 from pygame.locals import *
 from pygame.sprite import Sprite, DirtySprite, Group
+
 from pygame.font import Font
 from pygame.transform import flip
 from pygame.draw import line, circle, rect, aalines
 from pygame.display import set_caption, set_mode
 from pygame.time import Clock
-from .constants import DEBUG
-from robogame_engine import constants
-from robogame_engine.geometry import Point
 
+from robogame_engine.geometry import Point
 
 _max_layers = 5
 _sprites_by_layer = [Group() for i in range(_max_layers + 1)]
@@ -169,13 +167,13 @@ class UserInterface:
 
         pygame.init()
         SCREENRECT = Rect((0, 0),
-                          (constants.field_width, constants.field_height))
+                          (theme.field_width, theme.field_height))
         self.screen = set_mode(SCREENRECT.size)
         set_caption(name)
 
         self.background = pygame.Surface(self.screen.get_size())  # и ее размер
         self.background = self.background.convert()
-        self.background.fill(constants.background_color)  # заполняем цветом
+        self.background.fill(theme.background_color)  # заполняем цветом
         self.clear_screen()
 
         self.all = pygame.sprite.LayeredUpdates()
@@ -322,11 +320,11 @@ class UserInterface:
     def _draw_radar_outline(self, obj):
         from math import pi, cos, sin
 
-        angle = constants.tank_radar_angle
+        angle = theme.tank_radar_angle
         angle_r = (obj.state.course - angle // 2) / 180.0 * pi
         angle_l = (obj.state.course + angle // 2) / 180.0 * pi
         coord = obj.state.coord
-        radar_range = constants.tank_radar_range
+        radar_range = theme.tank_radar_range
         points = [
             Point(coord.x + cos(angle_r) * radar_range,
                   coord.y + sin(angle_r) * radar_range),
@@ -387,7 +385,7 @@ class Fps(DirtySprite):
         self.color = color
         self.image = self.font.render('-', 0, self.color)
         self.rect = self.image.get_rect()
-        self.rect = self.rect.move(constants.field_width - 100, 10)
+        self.rect = self.rect.move(theme.field_width - 100, 10)
         self.fps = []
 
     def update(self):
@@ -413,7 +411,7 @@ def load_image(name, colorkey=None):
     """
         Load image from file
     """
-    fullname = os.path.join(constants.data_path, name)
+    fullname = os.path.join(theme.data_path, name)
     try:
         image = pygame.image.load(fullname)
     except pygame.error, message:
