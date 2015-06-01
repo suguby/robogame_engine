@@ -27,11 +27,13 @@ class GameObject(object):
     __objects_count = 0
     __container = None
     _scene = None
+    __max_speed = 3  # setted in scene
 
     @classmethod
-    def set_scene(cls, scene, container):
+    def link_to_scene(cls, scene, container, max_speed):
         cls._scene = scene
         cls.__container = container
+        cls.__max_speed = max_speed
 
     def __init__(self, pos=None, angle=None):
         if self._scene is None:
@@ -185,6 +187,8 @@ class GameObject(object):
             Set movement to the specified obj/point
             <object/point/coordinats>, <speed>
         """
+        if speed > self.__max_speed:
+            speed = self.__max_speed
         command = MoveCommand(obj=self, target=target, speed=speed)
         self.add_command(command)
 

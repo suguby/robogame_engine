@@ -14,9 +14,14 @@ class Scene:
     """
     teams = {}
 
-    def __init__(self, name='RoboGame', field=None, theme_mod_path=None, **kwargs):
+    def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=None, **kwargs):
         self.objects = []
-        GameObject.set_scene(scene=self, container=self.objects)
+        self._max_speed = self.get_max_speed(speed)
+        GameObject.link_to_scene(
+            scene=self,
+            container=self.objects,
+            max_speed=self._max_speed,
+        )
         theme.set_theme_module(mod_path=theme_mod_path)
         self.hold_state = False  # режим пошаговой отладки
         self._step = 0
@@ -27,6 +32,11 @@ class Scene:
         self.parent_conn = None
         self.ui = None
         self.prepare(**kwargs)
+
+    def get_max_speed(self, speed):
+        if speed is None or speed > theme.NEAR_RADIUS:
+            speed = theme.NEAR_RADIUS
+        return speed
 
     def get_team(self, klass):
         try:

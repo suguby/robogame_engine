@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from robogame_engine.geometry import Point, Vector
-from robogame_engine.theme import theme
 
 
 class Command(object):
@@ -18,7 +17,7 @@ class Command(object):
 
 class MoveCommand(Command):
 
-    def __init__(self, obj, target, speed=None, **kwargs):
+    def __init__(self, obj, target, speed, **kwargs):
         super(MoveCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
         if isinstance(target, Point):
@@ -27,10 +26,7 @@ class MoveCommand(Command):
             self.target = target.coord
         else:
             raise Exception("Target %s must Point or GameObject!" % target)
-        if speed is None or speed > theme.MAX_SPEED:
-            self.speed = theme.MAX_SPEED
-        else:
-            self.speed = speed
+        self.speed = speed
 
     def execute(self):
         self.obj.state.move(target=self.target, speed=self.speed, **self.kwargs)

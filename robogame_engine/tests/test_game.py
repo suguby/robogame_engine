@@ -181,18 +181,23 @@ class Rect:
 
 class Beegarden(Scene, SceneObjectsGetter):
     _FLOWER_JITTER = 10
+    _HONEY_SPEED_FACTOR = 0.2
     __beehives = []
 
-    def prepare(self, speed=5, flowers_count=5, beehives_count=1):
+    def prepare(self, flowers_count=5, beehives_count=1):
         self._place_flowers_and_beehives(
             flowers_count=flowers_count,
             beehives_count=beehives_count,
         )
-        self._set_game_speed(speed=speed)
         self._objects_holder = self
+        honey_speed = int(self._max_speed * self._HONEY_SPEED_FACTOR)
+        if honey_speed < 1:
+            honey_speed = 1
+        HoneyHolder._honey_speed = honey_speed
 
     def _place_flowers_and_beehives(self, flowers_count, beehives_count):
-
+        if beehives_count > theme.TEAMS_COUNT:
+            raise Exception('Only {} beehives!'.format(theme.TEAMS_COUNT))
         flower = Rect(w=104, h=100)  # TODO получать значения из спрайтов
         beehive = Rect(w=150, h=117)
         field = Rect(w=self.field_width, h=self.field_height)
@@ -282,24 +287,8 @@ class Beegarden(Scene, SceneObjectsGetter):
             beehive = BeeHive(pos=pos, max_honey=max_honey)
             self.__beehives.append(beehive)
 
-    @classmethod
-    def get_beehive(cls, team):
-        try:
-            return cls.__beehives[team - 1]
-        except IndexError:
-            try:
-                return cls.__beehives[0]
-            except IndexError:
-                return None
-
-    def _set_game_speed(self, speed):
-        if speed > theme.NEAR_RADIUS:
-            speed = theme.NEAR_RADIUS
-        GameObject._default_speed = speed
-        honey_speed = int(speed / 5.0)
-        if honey_speed < 1:
-            honey_speed = 1
-        HoneyHolder._honey_speed = honey_speed
+    def get_beehive(self, team):
+        return self.__beehives[team - 1]
 
 
 class WorkerBee(Bee):
