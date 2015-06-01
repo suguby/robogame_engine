@@ -16,14 +16,16 @@ class HoneyHolder:
     _honey_source = None
     _honey_state = 'hold'
 
-    honey = property(lambda self: self._honey, doc="""Количество мёда у объекта""")
-
     def set_inital_honey(self, loaded, maximum):
         """Задать начальние значения: honey_loaded - сколько изначально мёда, honey_max - максимум"""
         self._honey = loaded
         if maximum == 0:
             raise Exception("honey_max can't be zero!")
         self._honey_max = maximum
+
+    @property
+    def honey(self):
+        return self._honey
 
     def _end_exchange(self, event):
         self._honey_source = None
@@ -126,7 +128,7 @@ class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
     @property
     def my_beehive(self):
         if self.__my_beehive is None:
-            self.__my_beehive = self._scene.get_objects_by_type(Flower)
+            self.__my_beehive = self._scene.get_beehive(team=self.team)
         return self.__my_beehive
 
     def update(self):
@@ -179,6 +181,7 @@ class Rect:
 
 class Beegarden(Scene, SceneObjectsGetter):
     _FLOWER_JITTER = 10
+    __beehives = []
 
     def prepare(self, speed=5, flowers_count=5, beehives_count=1):
         self._place_flowers_and_beehives(
@@ -226,7 +229,7 @@ class Beegarden(Scene, SceneObjectsGetter):
         if theme.DEBUG:
             print "Adjusted cell", cell, cells_in_width, cells_in_height
 
-        cell_numbers = [i for i in range(cells_count)]
+        cell_numbers = [team for team in range(cells_count)]
 
         jit_box = Rect(w=int(cell.w * self._FLOWER_JITTER), h=int(cell.h * self._FLOWER_JITTER))
         jit_box.shift(dx=(cell.w - jit_box.w) // 2, dy=(cell.h - jit_box.h) // 2)
@@ -267,20 +270,20 @@ class Beegarden(Scene, SceneObjectsGetter):
         max_honey = int(round((max_honey / 1000.0) * 1.3)) * 1000
         if max_honey < 1000:
             max_honey = 1000
-        for i in range(beehives_count):
-            if i == 0:
+        for team in range(beehives_count):
+            if team == 0:
                 pos = Point(90, 75)
-            elif i == 1:
+            elif team == 1:
                 pos = Point(self.field_width - 90, 75)
-            elif i == 2:
+            elif team == 2:
                 pos = Point(90, self.field_height - 75)
             else:
                 pos = Point(self.field_width - 90, self.field_height - 75)
-            BeeHive(pos=pos, max_honey=max_honey)  # сам себя добавит
+            beehive = BeeHive(pos=pos, max_honey=max_honey)
+            self.__beehives.append(beehive)
 
     @classmethod
     def get_beehive(cls, team):
-        # TODO сделать автоматическое распределение ульев - внизу, по кол-ву команд
         try:
             return cls.__beehives[team - 1]
         except IndexError:

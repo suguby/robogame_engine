@@ -34,8 +34,12 @@ class GameObject(object):
         cls.__container = container
 
     def __init__(self, pos=None, angle=None):
+        if self._scene is None:
+            raise Exception("You must create Scene instance at first!")
+        self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
+        self.team = self._scene.get_team(klass=self.__class__)
         self.coord = Point(pos) if pos else Point(0, 0)
         self.target = None
         if angle is None:
@@ -44,10 +48,6 @@ class GameObject(object):
         self.load_value_1 = 0
         self.load_value_2 = 0
         self.state = StateStopped(obj=self)
-
-        if self.__container is None:
-            raise Exception("You must create Scene instance at first!")
-        self.__container.append(self)
 
         self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
         self._distance_cache = {}  # TODO перенести в класс

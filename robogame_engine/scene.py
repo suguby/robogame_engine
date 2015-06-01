@@ -12,6 +12,7 @@ class Scene:
     """
         Game scene. Container for all game objects.
     """
+    teams = {}
 
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, **kwargs):
         self.objects = []
@@ -26,6 +27,18 @@ class Scene:
         self.parent_conn = None
         self.ui = None
         self.prepare(**kwargs)
+
+    def get_team(self, klass):
+        try:
+            return self.teams[klass.__name__]
+        except KeyError:
+            team = max(self.teams.values()) + 1 if self.teams else 1
+            if team > theme.TEAMS_COUNT:
+                raise Exception(
+                    "Only {} teams! No team for {}".format(
+                        theme.TEAMS_COUNT, klass.__name__))
+            self.teams[klass.__name__] = team
+            return team
 
     def prepare(self, **kwargs):
         raise NotImplementedError()
