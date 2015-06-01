@@ -48,12 +48,13 @@ class StateTurning(ObjectState):
 
 class StateMoving(ObjectState):
 
-    def __init__(self, obj, **kwargs):
+    def __init__(self, obj, target, speed, **kwargs):
         super(StateMoving, self).__init__(obj, **kwargs)
-        self.target = None
-        self.vector = Vector(self.obj.coord, self.target, 3)
+        self.target = target
+        self.vector = Vector(self.obj.coord, self.target, speed)
 
     def move(self, target, speed):
+        self.target = target
         self.vector = Vector(self.obj.coord, self.target, speed)
 
     def step(self):

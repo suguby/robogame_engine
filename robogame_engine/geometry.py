@@ -67,7 +67,7 @@ class Point():
         """
             Convert coordinates to display
         """
-        return int(self.x), theme.field_height - int(self.y)  # TODO в константу
+        return int(self.x), theme.FIELD_HEIGHT - int(self.y)
 
     def add(self, vector):
         """

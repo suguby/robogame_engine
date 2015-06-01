@@ -47,7 +47,7 @@ class Scene:
         """
 
         """
-        return [ObjectStatus(obj) for obj in self.objects]
+        return dict([(obj.id, ObjectStatus(obj)) for obj in self.objects])
 
     def go(self):
         """
@@ -100,7 +100,7 @@ class Scene:
         # ждем пока потомки помрут
         self.ui.join()
 
-        print 'Thank for playing robopycode! See you in the future :)'
+        print 'Thank for playing with robogame! See you in the future :)'
 
 
 def start_ui(name, child_conn):

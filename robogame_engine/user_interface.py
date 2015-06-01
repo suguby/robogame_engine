@@ -21,22 +21,19 @@ _images_cash = {}
 
 theme = None  # global constants source, inited in UI.__init__
 
+
 class RoboSprite(DirtySprite):
     """
         Show sprites on screen
     """
-    METER_1_COLOR = (0, 255, 70)
-    METER_2_COLOR = (232, 129, 31)
-
-    _img_file_name = 'empty.png'
     _layer = 0
 
-    def __init__(self, id, state):
+    def __init__(self, id, status):
         """
             Link object with its sprite
         """
         self.id = id
-        self.state = state
+        self.status = status
 
         if self._layer > _max_layers:
             self._layer = _max_layers
@@ -46,7 +43,7 @@ class RoboSprite(DirtySprite):
                                   _sprites_by_layer[self._layer])
         Sprite.__init__(self, self.sprite_containers)
 
-        image = load_image(self.state._img_file_name, -1)
+        image = load_image(self.status.sprite_filename, -1)
         self.images = [image, flip(image, 1, 0),
                        flip(image, 0, 1), flip(image, 1, 1)]
         self.image = self.images[0].copy()
@@ -62,42 +59,40 @@ class RoboSprite(DirtySprite):
         self._animcycle = 3
         self._drawed_count = 0
 
-    def update_state(self, state):
-        self.state = state
+    def update_status(self, state):
+        self.status = state
 
     def __str__(self):
-        return 'sprite(%s: rect=%s layer=%s)' \
-                % (self.id, self.rect, self._layer)
+        return 'sprite({}: rect={} layer={})'.format(self.id, self.rect, self._layer)
 
     def __repr__(self):
         return str(self)
 
     def _show_meters(self):
-        if hasattr(self.state, 'meter_1') and self.state.meter_1 > 0:
-            bar_px = int((self.state.armor / 100.0) * self.rect.width)
-            line(self.image, self.METER_1_COLOR, (0, 3), (bar_px, 3), 3)
-        if hasattr(self.state, 'meter_2') and self.state.meter_2 > 0:
-            bar_px = int((self.state.armor / 100.0) * self.rect.width)
-            line(self.image, self.METER_2_COLOR, (0, 5), (bar_px, 5), 2)
+        if hasattr(self.status, 'meter_1') and self.status.meter_1 > 0:
+            bar_px = int((self.status.armor / 100.0) * self.rect.width)
+            line(self.image, theme.METER_1_COLOR, (0, 3), (bar_px, 3), 3)
+        if hasattr(self.status, 'meter_2') and self.status.meter_2 > 0:
+            bar_px = int((self.status.armor / 100.0) * self.rect.width)
+            line(self.image, theme.METER_2_COLOR, (0, 5), (bar_px, 5), 2)
 
     def _show_selected(self):
         if self._selected:
-            outline_rect = pygame.Rect(0, 0,
-                self.rect.width, self.rect.height)
-            rect(self.image,
-                self._debug_color, outline_rect, 1)
+            outline_rect = pygame.Rect(0, 0, self.rect.width, self.rect.height)
+            rect(self.image, self._debug_color, outline_rect, 1)
 
     def _show_id(self):
-        if hasattr(self.state, 'id'):
-            id_image = self._id_font.render(str(self.state.id),
+        if hasattr(self.status, 'id'):
+            id_image = self._id_font.render(
+                str(self.status.id),
                 0,
                 self._debug_color)
             self.image.blit(id_image, (5, 5))
 
     def _show_detection(self):
-        if hasattr(self.state, 'detected_by'):
+        if hasattr(self.status, 'detected_by'):
             radius = 0
-            for obj in self.state.detected_by:
+            for obj in self.status.detected_by:
                 if obj.selected:
                     radius += 6
                     circle(self.image,
@@ -112,12 +107,12 @@ class RoboSprite(DirtySprite):
             Internal function for refreshing internal variables.
             Do not call in your code!
         """
-        self.rect.center = self.state.coord.to_screen()
-        if self.state.revolvable:
+        self.rect.center = Point(self.status.x, self.status.y).to_screen()
+        if self.status.rotatable:
             self.image = _rotate_about_center(self.images[0],
-                                              self.state.img_file_name,
-                                              self.state.course)
-        elif self.state.animated:
+                                              self.status.sprite_filename,
+                                              self.status.course)
+        elif self.status.animated:
             # TODO брать таки кадры из гифок
             self._drawed_count += 1
             self.image = self.images[self._drawed_count // self._animcycle % 4]
@@ -126,7 +121,7 @@ class RoboSprite(DirtySprite):
 
         self._show_meters()
         self._show_selected()
-        if hasattr(self.state, 'debug') and self.state.debug:
+        if hasattr(self.status, 'debug') and self.status.debug:
             self._show_id()
             self._show_detection()
 
@@ -141,8 +136,8 @@ class UserInput:
         self.the_end = False
         self.selected_ids = []
 
-        self._mouse_pos = None
-        self._mouse_buttons = None
+        self.mouse_pos = None
+        self.mouse_buttons = None
 
     def __eq__(self, other):
         return not self.__ne__(other)
@@ -168,9 +163,9 @@ class UserInterface:
         theme = current_theme
 
         pygame.init()
-        SCREENRECT = Rect((0, 0),
+        screenrect = Rect((0, 0),
                           (theme.FIELD_WIDTH, theme.FIELD_HEIGHT))
-        self.screen = set_mode(SCREENRECT.size)
+        self.screen = set_mode(screenrect.size)
         set_caption(name)
 
         self.background = pygame.Surface(self.screen.get_size())  # и ее размер
@@ -223,40 +218,32 @@ class UserInterface:
             sprite.kill()
         pygame.quit()
 
-    def update_state(self, objects_state):
+    def update_state(self, objects_status):
         """
             renew game objects states, create/delete sprites if need
         """
-        new_ids = set(objects_state)
+        new_ids = set(objects_status)
         old_ids = set(self.game_objects)
         new_game_objects = {}
 
-        for id in old_ids - new_ids:
+        for obj_id in old_ids - new_ids:
             # старые объекты - убиваем спрайты
-            sprite = self.game_objects[id]
+            sprite = self.game_objects[obj_id]
             sprite.kill()
 
-        for id in new_ids - old_ids:
+        for obj_id in new_ids - old_ids:
             # новые объекты - создаем спрайты
-            sprite = RoboSprite(id=id, state=objects_state[id])
-            new_game_objects[id] = sprite
+            sprite = RoboSprite(id=obj_id, status=objects_status[obj_id])
+            new_game_objects[obj_id] = sprite
 
-        for id in old_ids & new_ids:
+        for obj_id in old_ids & new_ids:
             # существующие объекты - обновляем состояния
-            sprite = self.game_objects[id]
-            state = objects_state[id]
-            sprite.update_state(state)
-            new_game_objects[id] = sprite
+            sprite = self.game_objects[obj_id]
+            status = objects_status[obj_id]
+            sprite.update_status(status)
+            new_game_objects[obj_id] = sprite
 
         self.game_objects = new_game_objects
-
-        # преобразуем список айдишников в список обьектов
-        for obj_id, obj in self.game_objects.iteritems():
-            obj.state._detected_by = [
-                self.game_objects[detected_by_id]
-                for detected_by_id in obj.state._detected_by
-                if detected_by_id in self.game_objects
-            ]
 
     def ui_state_changed(self):
         """
@@ -297,21 +284,21 @@ class UserInterface:
         """
             selecting objects with mouse
         """
-        self.ui_state._mouse_pos = pygame.mouse.get_pos()
-        self.ui_state._mouse_buttons = pygame.mouse.get_pressed()
+        self.ui_state.mouse_pos = pygame.mouse.get_pos()
+        self.ui_state.mouse_buttons = pygame.mouse.get_pressed()
 
-        if self.ui_state._mouse_buttons[0] and not self.mouse_buttons[0]:
+        if self.ui_state.mouse_buttons[0] and not self.mouse_buttons[0]:
             # mouse down
             for obj_id, obj in self.game_objects.iteritems():
-                if obj.state._selectable and \
-                   obj.rect.collidepoint(self.ui_state._mouse_pos):
+                if obj.status.selectable and \
+                   obj.rect.collidepoint(self.ui_state.mouse_pos):
                     # координаты экранные
                     obj._selected = not obj._selected
                 elif not self._debug:
                     # возможно выделение множества танков
                     # только на режиме отладки
                     obj._selected = False
-        self.mouse_buttons = self.ui_state._mouse_buttons
+        self.mouse_buttons = self.ui_state.mouse_buttons
         self.ui_state.selected_ids = [
             _id for _id in self.game_objects
             if self.game_objects[_id]._selected
@@ -325,41 +312,37 @@ class UserInterface:
         from math import pi, cos, sin
 
         angle = theme.tank_radar_angle
-        angle_r = (obj.state.course - angle // 2) / 180.0 * pi
-        angle_l = (obj.state.course + angle // 2) / 180.0 * pi
-        coord = obj.state.coord
+        angle_r = (obj.status.course - angle // 2) / 180.0 * pi
+        angle_l = (obj.status.course + angle // 2) / 180.0 * pi
         radar_range = theme.tank_radar_range
         points = [
-            Point(coord.x + cos(angle_r) * radar_range,
-                  coord.y + sin(angle_r) * radar_range),
-            Point(coord.x + cos(angle_l) * radar_range,
-                  coord.y + sin(angle_l) * radar_range),
-            Point(coord.x,
-                  coord.y)
+            Point(obj.status.x + cos(angle_r) * radar_range,
+                  obj.status.y + sin(angle_r) * radar_range),
+            Point(obj.status.x + cos(angle_l) * radar_range,
+                  obj.status.y + sin(angle_l) * radar_range),
+            Point(obj.status.x,
+                  obj.status.y)
         ]
         points = [x.to_screen() for x in points]
-        aalines(self.screen,
-                            obj._debug_color,
-                            True,
-                            points)
+        aalines(self.screen, obj._debug_color, True, points)
 
     def draw(self):
         """
             Drawing sprites on screen
         """
 
-        #update all the sprites
+        # update all the sprites
         self.all.update()
 
-        #draw the scene
+        # draw the scene
         if self._debug:
             self.screen.blit(self.background, (0, 0))
-            dirty = self.all.draw(self.screen)
-            for obj in self.all:
-                if hasattr(obj, 'state') and \
-                   hasattr(obj.state, 'gun_heat') and \
-                   obj._selected:
-                    self._draw_radar_outline(obj)
+            self.all.draw(self.screen)
+            # for obj in self.all:
+            #     if hasattr(obj, 'status') and \
+            #        hasattr(obj.status, 'gun_heat') and \
+            #        obj._selected:
+            #         self._draw_radar_outline(obj)
             pygame.display.flip()
         else:
             # clear/erase the last drawn sprites
@@ -367,7 +350,7 @@ class UserInterface:
             dirty = self.all.draw(self.screen)
             pygame.display.update(dirty)
 
-        #cap the framerate
+        # cap the framerate
         clock.tick(self._max_fps)
         return True
 
@@ -407,15 +390,12 @@ class Fps(DirtySprite):
             msg = ''
         self.image = self.font.render(msg, 1, self.color)
 
-    def type(self):
-        return 'fps'
-
 
 def load_image(name, colorkey=None):
     """
         Load image from file
     """
-    fullname = os.path.join(theme.data_path, name)
+    fullname = os.path.join(theme.PICTURES_PATH, name)
     try:
         image = pygame.image.load(fullname)
     except pygame.error, message:

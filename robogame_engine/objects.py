@@ -19,6 +19,7 @@ class GameObject(object):
     radius = 1
     animated = False
     rotatable = True
+    selectable = True
     meter_1 = None
     meter_2 = None
     sprite_filename = None  # переопределить в наследниках
@@ -63,6 +64,10 @@ class GameObject(object):
     @property
     def y(self):
         return self.coord.y
+
+    @property
+    def course(self):
+        return self.vector.angle
 
     def add_event(self, event):
         self._events.put(event)
@@ -215,6 +220,7 @@ class ObjectStatus:
     """
         Hold game object state, useful for exchange between processes
     """
+    SEND_TYPES = (bool, int, float, str, unicode, )
 
     def __init__(self, obj):
         for attr_name in dir(obj):
@@ -223,4 +229,7 @@ class ObjectStatus:
             attr = getattr(obj, attr_name)
             if callable(attr):
                 continue
-            setattr(self, attr_name, attr)
+            for ttype in self.SEND_TYPES:
+                if isinstance(attr, ttype):
+                    setattr(self, attr_name, attr)
+                    break

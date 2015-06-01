@@ -114,7 +114,8 @@ class SceneObjectsGetter:
 
 class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
     _MAX_HONEY = 100
-    sprite_filename = 'bee.jpg'  # TODO вынести в тему, по имени класса
+    sprite_filename = 'bee.png'  # TODO вынести в тему, по имени класса
+    rotatable = False
     __my_beehive = None
 
     def __init__(self, pos=None):
@@ -132,7 +133,9 @@ class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
         pass
 
 class Flower(GameObject, HoneyHolder):
-    sprite_filename = 'flower.jpg'
+    sprite_filename = 'flower.png'
+    rotatable = False
+    selectable = False
     _MIN_HONEY = 100
     _MAX_HONEY = 200
 
@@ -146,7 +149,9 @@ class Flower(GameObject, HoneyHolder):
         pass
 
 class BeeHive(GameObject, HoneyHolder):
-    sprite_filename = 'beehive.jpg'
+    sprite_filename = 'beehive.png'
+    rotatable = False
+    selectable = False
 
     def __init__(self, pos, max_honey):
         super(BeeHive, self).__init__(pos=pos)
@@ -174,7 +179,6 @@ class Rect:
 
 class Beegarden(Scene, SceneObjectsGetter):
     _FLOWER_JITTER = 10
-
 
     def prepare(self, speed=5, flowers_count=5, beehives_count=1):
         self._place_flowers_and_beehives(
@@ -383,18 +387,18 @@ class Next2Bee(GreedyBee):
 if __name__ == '__main__':
     beegarden = Beegarden(
         name="My little garden",
-        beehives_count=4,
-        flowers_count=50,
+        beehives_count=1,
+        flowers_count=7,
         speed=50,
-        field=(1280, 720),
+        field=(400, 300),
         # theme='dark',
     )
 
-    count = 12
+    count = 2
     bees = [WorkerBee() for i in range(count)]
-    bees_2 = [GreedyBee() for i in range(count)]
-    bees_3 = [NextBee() for i in range(count)]
-    bees_4 = [Next2Bee() for i in range(count)]
+    # bees_2 = [GreedyBee() for i in range(count)]
+    # bees_3 = [NextBee() for i in range(count)]
+    # bees_4 = [Next2Bee() for i in range(count)]
 
     bee = WorkerBee()
     bee.move_at(Point(1000, 1000))  # проверка на выход за границы экрана
