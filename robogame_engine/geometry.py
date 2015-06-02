@@ -9,7 +9,7 @@ def from_screen(coord):
     """
         Convert coordinates from the screen
     """
-    return coord[0], theme.field_height - coord[1]
+    return coord[0], theme.FIELD_HEIGHT - coord[1]
 
 
 def normalise_angle(a):

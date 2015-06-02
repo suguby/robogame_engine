@@ -106,7 +106,7 @@ class GameObject(object):
         if righ_ro:
             self.coord.x -= righ_ro + 1
             self.stop()
-        top_ro = self._runout(self.coord.y, self._scene.field_height)
+        top_ro = self._runout(self.coord.y, theme.FIELD_HEIGHT)
         if top_ro:
             self.coord.y -= top_ro + 1
             self.stop()

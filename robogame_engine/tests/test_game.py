@@ -200,7 +200,7 @@ class Beegarden(Scene, SceneObjectsGetter):
             raise Exception('Only {} beehives!'.format(theme.TEAMS_COUNT))
         flower = Rect(w=104, h=100)  # TODO получать значения из спрайтов
         beehive = Rect(w=150, h=117)
-        field = Rect(w=self.field_width, h=self.field_height)
+        field = Rect(w=theme.FIELD_WIDTH, h=theme.FIELD_HEIGHT)
         field.reduce(dw=beehive.w, dh=beehive.h)
         if beehives_count >= 2:
             field.reduce(dw=beehive.w)
@@ -253,8 +253,8 @@ class Beegarden(Scene, SceneObjectsGetter):
         if beehives_count >= 3:
             beehives_h = beehive.h * 2
 
-        field.x = beehive.w + (self.field_width - field.w - beehives_w) // 2.0 + flower.w // 3
-        field.y = beehive.h + (self.field_height - field.h - beehives_h) // 2.0
+        field.x = beehive.w + (theme.FIELD_WIDTH - field.w - beehives_w) // 2.0 + flower.w // 3
+        field.y = beehive.h + (theme.FIELD_HEIGHT - field.h - beehives_h) // 2.0
         if theme.DEBUG:
             print "Shifted field", field
 
@@ -279,11 +279,11 @@ class Beegarden(Scene, SceneObjectsGetter):
             if team == 0:
                 pos = Point(90, 75)
             elif team == 1:
-                pos = Point(self.field_width - 90, 75)
+                pos = Point(theme.FIELD_WIDTH - 90, 75)
             elif team == 2:
-                pos = Point(90, self.field_height - 75)
+                pos = Point(90, theme.FIELD_HEIGHT - 75)
             else:
-                pos = Point(self.field_width - 90, self.field_height - 75)
+                pos = Point(theme.FIELD_WIDTH - 90, theme.FIELD_HEIGHT - 75)
             beehive = BeeHive(pos=pos, max_honey=max_honey)
             self.__beehives.append(beehive)
 

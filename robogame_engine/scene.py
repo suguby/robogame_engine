@@ -12,7 +12,7 @@ class Scene:
     """
         Game scene. Container for all game objects.
     """
-    teams = {}
+    _teams = {}
 
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=None, **kwargs):
         self.objects = []
@@ -26,9 +26,8 @@ class Scene:
         self.hold_state = False  # режим пошаговой отладки
         self._step = 0
         self.name = name
-        if field is None:
-            field = (1200, 600)
-        self.field_width, self.field_height = field
+        if field:
+            theme.FIELD_WIDTH, theme.FIELD_HEIGHT = field
         self.parent_conn = None
         self.ui = None
         self.prepare(**kwargs)
@@ -40,14 +39,14 @@ class Scene:
 
     def get_team(self, klass):
         try:
-            return self.teams[klass.__name__]
+            return self._teams[klass.__name__]
         except KeyError:
-            team = max(self.teams.values()) + 1 if self.teams else 1
+            team = max(self._teams.values()) + 1 if self._teams else 1
             if team > theme.TEAMS_COUNT:
                 raise Exception(
                     "Only {} teams! No team for {}".format(
                         theme.TEAMS_COUNT, klass.__name__))
-            self.teams[klass.__name__] = team
+            self._teams[klass.__name__] = team
             return team
 
     def prepare(self, **kwargs):
