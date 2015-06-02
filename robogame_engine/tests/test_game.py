@@ -118,6 +118,8 @@ class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
     _MAX_HONEY = 100
     sprite_filename = 'bee.png'  # TODO вынести в тему, по имени класса
     rotatable = False
+    radius = 44
+    _part_of_team = True
     __my_beehive = None
 
     def __init__(self, pos=None):
@@ -128,7 +130,10 @@ class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
     @property
     def my_beehive(self):
         if self.__my_beehive is None:
-            self.__my_beehive = self._scene.get_beehive(team=self.team)
+            try:
+                self.__my_beehive = self._scene.get_beehive(team=self.team)
+            except IndexError:
+                raise Exception("No beehive for {} - check beehives_count!".format(self.__class__.__name__))
         return self.__my_beehive
 
     def update(self):
@@ -136,6 +141,7 @@ class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
 
 class Flower(GameObject, HoneyHolder):
     sprite_filename = 'flower.png'
+    radius = 50
     rotatable = False
     selectable = False
     _MIN_HONEY = 100
@@ -152,6 +158,7 @@ class Flower(GameObject, HoneyHolder):
 
 class BeeHive(GameObject, HoneyHolder):
     sprite_filename = 'beehive.png'
+    radius = 75
     rotatable = False
     selectable = False
 
@@ -180,7 +187,7 @@ class Rect:
 
 
 class Beegarden(Scene, SceneObjectsGetter):
-    _FLOWER_JITTER = 10
+    _FLOWER_JITTER = 0.7
     _HONEY_SPEED_FACTOR = 0.2
     __beehives = []
 
@@ -198,43 +205,32 @@ class Beegarden(Scene, SceneObjectsGetter):
     def _place_flowers_and_beehives(self, flowers_count, beehives_count):
         if beehives_count > theme.TEAMS_COUNT:
             raise Exception('Only {} beehives!'.format(theme.TEAMS_COUNT))
-        flower = Rect(w=104, h=100)  # TODO получать значения из спрайтов
-        beehive = Rect(w=150, h=117)
+
         field = Rect(w=theme.FIELD_WIDTH, h=theme.FIELD_HEIGHT)
-        field.reduce(dw=beehive.w, dh=beehive.h)
+        field.reduce(dw=BeeHive.radius * 2, dh=BeeHive.radius * 2)
         if beehives_count >= 2:
-            field.reduce(dw=beehive.w)
+            field.reduce(dw=BeeHive.radius * 2)
         if beehives_count >= 3:
-            field.reduce(dh=beehive.h)
-        if field.w < flower.w or field.h < flower.h:
+            field.reduce(dh=BeeHive.radius * 2)
+        if field.w < Flower.radius or field.h < Flower.radius:
             raise Exception("Too little field...")
         if theme.DEBUG:
             print "Initial field", field
 
-        cell = Rect()
-        side = math.sqrt(field.w * field.h * flower.h / float(flowers_count * flower.w))
-        cell.w = int(side * flower.w / flower.h)
-        cell.h = int(side)
+        cells_in_width = int(math.ceil(math.sqrt(float(field.w) / field.h * flowers_count)))
+        cells_in_height = int(math.ceil(float(flowers_count) / cells_in_width))
+        cells_count = cells_in_height * cells_in_width
         if theme.DEBUG:
-            print "Initial cell", cell
+            print "Cells count", cells_count, cells_in_width, cells_in_height
+        if cells_count < flowers_count:
+            print u"Ну я не знаю..."
 
-        cells_in_width, cells_in_height, cells_count = 5, 5, 25
-        while True:
-            cells_in_width = int(float(field.w) / cell.w) - 1  # еще одна ячейка на джиттер
-            cells_in_height = int(float(field.h) / cell.h) - 1
-            cells_count = cells_in_width * cells_in_height
-            if cells_count >= flowers_count or cells_in_height == 0 or cells_in_width == 0:
-                break
-            dw = (float(field.w) - cells_in_width * cell.w) / cells_in_width
-            dh = (float(field.h) - cells_in_height * cell.h) / cells_in_height
-            if dw > dh:
-                cell.w -= 1
-            else:
-                cell.h -= 1
+        cell = Rect(w=field.w / cells_in_width, h=field.h / cells_in_height)
+
         if theme.DEBUG:
-            print "Adjusted cell", cell, cells_in_width, cells_in_height
+            print "Adjusted cell", cell
 
-        cell_numbers = [team for team in range(cells_count)]
+        cell_numbers = [i for i in range(cells_count)]
 
         jit_box = Rect(w=int(cell.w * self._FLOWER_JITTER), h=int(cell.h * self._FLOWER_JITTER))
         jit_box.shift(dx=(cell.w - jit_box.w) // 2, dy=(cell.h - jit_box.h) // 2)
@@ -246,21 +242,14 @@ class Beegarden(Scene, SceneObjectsGetter):
         if theme.DEBUG:
             print "Adjusted field", field
 
-        beehives_w = beehive.w
-        beehives_h = beehive.h
-        if beehives_count >= 2:
-            beehives_w = beehive.w * 2
-        if beehives_count >= 3:
-            beehives_h = beehive.h * 2
-
-        field.x = beehive.w + (theme.FIELD_WIDTH - field.w - beehives_w) // 2.0 + flower.w // 3
-        field.y = beehive.h + (theme.FIELD_HEIGHT - field.h - beehives_h) // 2.0
+        field.x = BeeHive.radius * 2
+        field.y = BeeHive.radius * 2
         if theme.DEBUG:
             print "Shifted field", field
 
         max_honey = 0
-        flowers = []
-        while len(flowers) < flowers_count:
+        i = 0
+        while i < flowers_count:
             cell_number = random.choice(cell_numbers)
             cell_numbers.remove(cell_number)
             cell.x = (cell_number % cells_in_width) * cell.w
@@ -268,9 +257,9 @@ class Beegarden(Scene, SceneObjectsGetter):
             dx = random.randint(0, jit_box.w)
             dy = random.randint(0, jit_box.h)
             pos = Point(field.x + cell.x + dx, field.y + cell.y + dy)
-            flower = Flower(pos)  # автоматически добавит к списку цаетов
-            flowers.append(flower)
+            flower = Flower(pos)
             max_honey += flower.honey
+            i += 1
         max_honey /= float(beehives_count)
         max_honey = int(round((max_honey / 1000.0) * 1.3)) * 1000
         if max_honey < 1000:
@@ -382,7 +371,7 @@ if __name__ == '__main__':
         beehives_count=1,
         flowers_count=7,
         speed=50,
-        field=(800, 600),
+        # field=(800, 600),
         # theme='dark',
     )
 

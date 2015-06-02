@@ -13,4 +13,6 @@ METER_2_COLOR = (232, 129, 31)
 
 TEAMS_COUNT = 4
 
+DEBUG = False
+
 # See robogame_engine.constants

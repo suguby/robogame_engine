@@ -16,14 +16,15 @@ class GameObject(object):
     """
         Main game object
     """
-    radius = 1
+    sprite_filename = None  # переопределить в наследниках
+    radius = 10
     animated = False
     rotatable = True
     selectable = True
     meter_1 = None
     meter_2 = None
-    sprite_filename = None  # переопределить в наследниках
 
+    _part_of_team = False
     __objects_count = 0
     __container = None
     _scene = None
@@ -72,7 +73,9 @@ class GameObject(object):
 
     @property
     def team(self):
-        return self._scene.get_team(cls=self.__class__)
+        if self._part_of_team:
+            return self._scene.get_team(cls=self.__class__)
+        return None
 
     def add_event(self, event):
         self._events.put(event)
