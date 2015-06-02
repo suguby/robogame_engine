@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from multiprocessing import Pipe, Process
 import time
+from robogame_engine.events import EventCollide
+from robogame_engine.geometry import Vector
 
 from robogame_engine.objects import ObjectStatus, GameObject
 from robogame_engine.theme import theme
@@ -12,6 +14,7 @@ class Scene:
     """
         Game scene. Container for all game objects.
     """
+    check_collisions = True
     _teams = {}
 
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=None, **kwargs):
@@ -24,12 +27,13 @@ class Scene:
             max_speed=self._max_speed,
         )
         self.hold_state = False  # режим пошаговой отладки
-        self._step = 0
         self.name = name
         if field:
             theme.FIELD_WIDTH, theme.FIELD_HEIGHT = field
         self.parent_conn = None
         self.ui = None
+        self._step = 0
+        self._checked_ids = []
         self.prepare(**kwargs)
 
     def get_max_speed(self, speed):
@@ -60,10 +64,30 @@ class Scene:
             Proceed objects states, collision detection, hits
             and radars discovering
         """
+        self._checked_ids = []
         for obj in self.objects:
             obj.proceed_events()
             obj.proceed_commands()
             obj.game_step()
+            if self.check_collisions:
+                self._check_collisions(obj)
+            self._checked_ids.append(obj.id)
+
+    def _check_collisions(self, left):
+        for right in self.objects:
+            if (right.id == left.id) or (right.id in self._checked_ids):
+                continue
+            distance = left.distance_to(right)
+            overlap_distance = int(left.radius + right.radius - distance)
+            if overlap_distance > 1:
+                # may intersect by one pixel
+                step_back_vector = Vector(right, left, overlap_distance // 2)
+                left.debug('step_back_vector %s', step_back_vector)
+                left.coord.add(step_back_vector)
+                right.coord.add(-step_back_vector)
+                left.add_event(EventCollide(right))
+                right.add_event(EventCollide(left))
+
 
     def get_objects_status(self):
         """

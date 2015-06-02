@@ -29,6 +29,7 @@ class GameObject(object):
     __container = None
     _scene = None
     __max_speed = 3  # setted in scene
+    _distance_cache = {}  # not used TODO use and clean each game step
 
     @classmethod
     def link_to_scene(cls, scene, container, max_speed):
@@ -52,7 +53,6 @@ class GameObject(object):
         self.state = StateStopped(obj=self)
 
         self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
-        self._distance_cache = {}  # TODO перенести в класс
         self._events = Queue()
         self._commands = Queue()
         self._selected = False
@@ -99,7 +99,17 @@ class GameObject(object):
         """
         self.debug('step {coord} {vector} {state}')
         self.state.step()
+        self._check_runout()
+        self._heartbeat()
 
+    def _heartbeat(self):
+        self._heartbeat_tics -= 1
+        if not self._heartbeat_tics:
+            event = EventHearbeat()
+            self.add_event(event)
+            self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
+
+    def _check_runout(self):
         left_ro = self._runout(self.coord.x)
         if left_ro:
             self.coord.x += left_ro + 1
@@ -116,12 +126,6 @@ class GameObject(object):
         if top_ro:
             self.coord.y -= top_ro + 1
             self.stop()
-
-        self._heartbeat_tics -= 1
-        if not self._heartbeat_tics:
-            event = EventHearbeat()
-            self.add_event(event)
-            self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
 
     def _runout(self, coordinate, hight_bound=None):
         """
@@ -207,19 +211,31 @@ class GameObject(object):
 
     ############# Events ###############
 
-    def stopped(self):
+    def on_born(self):
+        """
+            Event: born
+        """
+        self.info('born at {coord}')
+
+    def on_stop(self):
         """
             Event: stopped
         """
         self.info('stopped at {coord}')
 
-    def stopped_at_target(self):
+    def on_stop_at_target(self):
         """
             Event: stopped at target
         """
         self.info('stopped at target {coord}')
 
-    def hearbeat(self):
+    def on_collide_with(self, obj_status):
+        """
+            Event: Collide
+        """
+        self.info('collided with {}'.format(obj_status))
+
+    def on_hearbeat(self):
         """
             Event: Heartbeat
         """
