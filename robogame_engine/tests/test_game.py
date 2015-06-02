@@ -121,7 +121,7 @@ class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
     __my_beehive = None
 
     def __init__(self, pos=None):
-        super(Bee, self).__init__(pos)
+        super(Bee, self).__init__(pos=self.my_beehive)
         self.set_inital_honey(loaded=0, maximum=self._MAX_HONEY)
         self._objects_holder = self._scene
 
@@ -382,7 +382,7 @@ if __name__ == '__main__':
         beehives_count=1,
         flowers_count=7,
         speed=50,
-        field=(400, 300),
+        field=(800, 600),
         # theme='dark',
     )
 

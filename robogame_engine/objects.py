@@ -41,7 +41,6 @@ class GameObject(object):
         self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
-        self.team = self._scene.get_team(klass=self.__class__)
         self.coord = Point(pos) if pos else Point(0, 0)
         self.target = None
         if angle is None:
@@ -70,6 +69,10 @@ class GameObject(object):
     @property
     def course(self):
         return self.vector.angle
+
+    @property
+    def team(self):
+        return self._scene.get_team(cls=self.__class__)
 
     def add_event(self, event):
         self._events.put(event)
@@ -102,7 +105,7 @@ class GameObject(object):
         if botm_ro:
             self.coord.y += botm_ro + 1
             self.stop()
-        righ_ro = self._runout(self.coord.x, self._scene.field_width)
+        righ_ro = self._runout(self.coord.x, theme.FIELD_WIDTH)
         if righ_ro:
             self.coord.x -= righ_ro + 1
             self.stop()

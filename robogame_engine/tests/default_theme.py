@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import os
 
 BACKGROUND_COLOR = (85, 107, 47)
@@ -14,4 +13,4 @@ METER_2_COLOR = (232, 129, 31)
 
 TEAMS_COUNT = 4
 
-
+# See robogame_engine.constants

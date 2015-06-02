@@ -15,6 +15,7 @@ class Scene:
     _teams = {}
 
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=None, **kwargs):
+        theme.set_theme_module(mod_path=theme_mod_path)
         self.objects = []
         self._max_speed = self.get_max_speed(speed)
         GameObject.link_to_scene(
@@ -22,7 +23,6 @@ class Scene:
             container=self.objects,
             max_speed=self._max_speed,
         )
-        theme.set_theme_module(mod_path=theme_mod_path)
         self.hold_state = False  # режим пошаговой отладки
         self._step = 0
         self.name = name
@@ -37,16 +37,16 @@ class Scene:
             speed = theme.NEAR_RADIUS
         return speed
 
-    def get_team(self, klass):
+    def get_team(self, cls):
         try:
-            return self._teams[klass.__name__]
+            return self._teams[cls.__name__]
         except KeyError:
             team = max(self._teams.values()) + 1 if self._teams else 1
             if team > theme.TEAMS_COUNT:
                 raise Exception(
                     "Only {} teams! No team for {}".format(
-                        theme.TEAMS_COUNT, klass.__name__))
-            self._teams[klass.__name__] = team
+                        theme.TEAMS_COUNT, cls.__name__))
+            self._teams[cls.__name__] = team
             return team
 
     def prepare(self, **kwargs):
