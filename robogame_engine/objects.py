@@ -8,7 +8,7 @@ from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
 from robogame_engine.theme import theme
 from .states import StateStopped
 from .utils import logger
-from .events import (EventHearbeat, EventStopped)
+from .events import (EventHearbeat, EventStopped, EventBorned)
 from .geometry import Point, Vector
 
 
@@ -56,7 +56,7 @@ class GameObject(object):
         self._events = Queue()
         self._commands = Queue()
         self._selected = False
-
+        self.add_event(EventBorned(self))
         self.debug('born {coord} {vector}')
 
     @property
@@ -223,11 +223,11 @@ class GameObject(object):
         """
         self.info('stopped at {coord}')
 
-    def on_stop_at_target(self):
+    def on_stop_at_target(self, target):
         """
             Event: stopped at target
         """
-        self.info('stopped at target {coord}')
+        self.info('stopped at target {}'.format(target))
 
     def on_collide_with(self, obj_status):
         """

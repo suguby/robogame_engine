@@ -187,6 +187,7 @@ class Rect:
 
 
 class Beegarden(Scene, SceneObjectsGetter):
+    check_collisions = False
     _FLOWER_JITTER = 0.7
     _HONEY_SPEED_FACTOR = 0.2
     __beehives = []

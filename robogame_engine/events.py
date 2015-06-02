@@ -17,6 +17,12 @@ class GameEvent:
         raise NotImplementedError()
 
 
+class EventBorned(GameEvent):
+
+    def handle(self, obj):
+        obj.on_born()
+
+
 class EventStopped(GameEvent):
 
     def handle(self, obj):
