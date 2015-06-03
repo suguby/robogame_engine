@@ -21,8 +21,6 @@ class GameObject(object):
     animated = False
     rotatable = True
     selectable = True
-    meter_1 = None
-    meter_2 = None
 
     _part_of_team = False
     __objects_count = 0
@@ -48,8 +46,6 @@ class GameObject(object):
         if angle is None:
             angle = randint(0, 360)
         self.vector = Vector(angle, 0)
-        self.load_value_1 = 0
-        self.load_value_2 = 0
         self.state = StateStopped(obj=self)
 
         self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
@@ -76,6 +72,14 @@ class GameObject(object):
         if self._part_of_team:
             return self._scene.get_team(cls=self.__class__)
         return None
+
+    @property
+    def meter_1(self):
+        return 0.0
+
+    @property
+    def meter_2(self):
+        return 0.0
 
     def add_event(self, event):
         self._events.put(event)

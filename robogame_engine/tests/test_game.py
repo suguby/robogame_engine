@@ -12,7 +12,7 @@ class HoneyHolder:
     """Класс объекта, который может нести мёд"""
     _honey_speed = 1
     _honey = 0
-    _honey_max = 0
+    _max_honey = 0
     _honey_source = None
     _honey_state = 'hold'
 
@@ -21,11 +21,15 @@ class HoneyHolder:
         self._honey = loaded
         if maximum == 0:
             raise Exception("honey_max can't be zero!")
-        self._honey_max = maximum
+        self._max_honey = maximum
 
     @property
     def honey(self):
         return self._honey
+
+    @property
+    def meter_1(self):
+        return self.honey / float(self._max_honey)
 
     def _end_exchange(self, event):
         self._honey_source = None
@@ -61,8 +65,8 @@ class HoneyHolder:
 
     def _put_honey(self, value):
         self._honey += value
-        if self._honey > self._honey_max:
-            self._honey = self._honey_max
+        if self._honey > self._max_honey:
+            self._honey = self._max_honey
             return False
         return True
 
@@ -86,7 +90,7 @@ class HoneyHolder:
 
     def is_full(self):
         """полностью заполнен?"""
-        return self.honey >= self._honey_max
+        return self.honey >= self._max_honey
 
 
 class SceneObjectsGetter:
@@ -114,7 +118,7 @@ class SceneObjectsGetter:
         return self.__beehives
 
 
-class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
+class Bee(HoneyHolder, GameObject, SceneObjectsGetter):
     _MAX_HONEY = 100
     sprite_filename = 'bee.png'  # TODO вынести в тему, по имени класса
     rotatable = False
@@ -136,10 +140,23 @@ class Bee(GameObject, HoneyHolder, SceneObjectsGetter):
                 raise Exception("No beehive for {} - check beehives_count!".format(self.__class__.__name__))
         return self.__my_beehive
 
-    def update(self):
+    def on_stop_at_target(self, target):
+        """Обработчик события 'остановка у цели' """
+        if isinstance(target, Flower):
+            self.on_stop_at_flower(target)
+        elif isinstance(target, BeeHive):
+            self.on_stop_at_beehive(target)
+        else:
+            pass
+
+    def on_stop_at_flower(self, flower):
         pass
 
-class Flower(GameObject, HoneyHolder):
+    def on_stop_at_beehive(self, beehive):
+        pass
+
+
+class Flower(HoneyHolder, GameObject):
     sprite_filename = 'flower.png'
     radius = 50
     rotatable = False
@@ -151,12 +168,12 @@ class Flower(GameObject, HoneyHolder):
         super(Flower, self).__init__(pos=pos)
         if max_honey is None:
             max_honey = random.randint(self._MIN_HONEY, self._MIN_HONEY)
-        self.set_inital_honey(loaded=0, maximum=max_honey)
+        self.set_inital_honey(loaded=max_honey, maximum=max_honey)
 
     def update(self):
         pass
 
-class BeeHive(GameObject, HoneyHolder):
+class BeeHive(HoneyHolder, GameObject):
     sprite_filename = 'beehive.png'
     radius = 75
     rotatable = False
@@ -286,7 +303,7 @@ class WorkerBee(Bee):
 
     def is_other_bee_target(self, flower):
         for bee in WorkerBee.all_bees:
-            if hasattr(bee, 'flower') and bee.flower and bee.flower._id == flower._id:
+            if hasattr(bee, 'flower') and bee.flower and bee.flower.id == flower.id:
                 return True
         return False
 

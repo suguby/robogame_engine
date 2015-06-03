@@ -8,6 +8,7 @@ from robogame_engine.geometry import Vector
 from robogame_engine.objects import ObjectStatus, GameObject
 from robogame_engine.theme import theme
 from robogame_engine.user_interface import UserInterface
+from robogame_engine.utils import logger
 
 
 class Scene:
@@ -34,6 +35,8 @@ class Scene:
         self.ui = None
         self._step = 0
         self._checked_ids = []
+        if theme.DEBUG:
+            logger.setLevel('DEBUG')
         self.prepare(**kwargs)
 
     def get_max_speed(self, speed):
