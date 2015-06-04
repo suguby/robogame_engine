@@ -91,7 +91,6 @@ class Scene:
                 left.add_event(EventCollide(right))
                 right.add_event(EventCollide(left))
 
-
     def get_objects_status(self):
         """
 

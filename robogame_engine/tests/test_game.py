@@ -5,6 +5,7 @@ import random
 
 from robogame_engine import GameObject, Scene
 from robogame_engine.geometry import Point
+from robogame_engine.states import StateMoving
 from robogame_engine.theme import theme
 
 
@@ -29,7 +30,7 @@ class HoneyHolder:
 
     @property
     def meter_1(self):
-        return self.honey / float(self._max_honey)
+        return self._honey / float(self._max_honey)
 
     def _end_exchange(self, event):
         self._honey_source = None
@@ -140,6 +141,10 @@ class Bee(HoneyHolder, GameObject, SceneObjectsGetter):
                 raise Exception("No beehive for {} - check beehives_count!".format(self.__class__.__name__))
         return self.__my_beehive
 
+    def game_step(self):
+        super(Bee, self).game_step()
+        self._update(is_moving=isinstance(self.state, StateMoving))
+
     def on_stop_at_target(self, target):
         """Обработчик события 'остановка у цели' """
         if isinstance(target, Flower):
@@ -167,7 +172,7 @@ class Flower(HoneyHolder, GameObject):
     def __init__(self, pos, max_honey=None):
         super(Flower, self).__init__(pos=pos)
         if max_honey is None:
-            max_honey = random.randint(self._MIN_HONEY, self._MIN_HONEY)
+            max_honey = random.randint(self._MIN_HONEY, self._MAX_HONEY)
         self.set_inital_honey(loaded=max_honey, maximum=max_honey)
 
     def update(self):
