@@ -5,6 +5,7 @@ from robogame_engine import constants
 
 class Theme(object):
     mod_path = None
+    module = constants
 
     def set_theme_module(self, mod_path=None):
         self.mod_path = 'default_theme' if mod_path is None else mod_path

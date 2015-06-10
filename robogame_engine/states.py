@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from robogame_engine.events import EventStopped, EventStoppedAtTargetPoint
+from robogame_engine.events import EventStoppedAtTargetPoint
 from robogame_engine.geometry import normalise_angle, Vector
 
 
@@ -8,6 +8,8 @@ class ObjectState(object):
     def __init__(self, obj, **kwargs):
         self.obj = obj
         self.kwargs = kwargs
+        self.vector = None
+        self.target = None
 
     def move(self, target, speed):
         self.obj.state = StateMoving(obj=self.obj, target=target, speed=speed)
@@ -34,7 +36,7 @@ class StateTurning(ObjectState):
         if abs(delta) < obj.TURN_SPEED:
             obj.course = obj.vector.angle
             if self.target:
-                obj.state = StateMoving(obj=obj, target=self.target)
+                obj.state = StateMoving(obj=obj, target=self.target, speed=10)  # TODO понять откуда брать скорость
             else:
                 obj.state = StateStopped(obj=obj)
         else:

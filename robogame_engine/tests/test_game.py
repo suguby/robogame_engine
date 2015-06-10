@@ -393,18 +393,18 @@ class Next2Bee(GreedyBee):
 if __name__ == '__main__':
     beegarden = Beegarden(
         name="My little garden",
-        beehives_count=1,
-        flowers_count=5,
+        beehives_count=4,
+        flowers_count=10,
         speed=3,
         # field=(800, 600),
         # theme='dark',
     )
 
-    count = 2
+    count = 6
     bees = [WorkerBee(pos=Point(400,400)) for i in range(count)]
-    # bees_2 = [GreedyBee() for i in range(count)]
-    # bees_3 = [NextBee() for i in range(count)]
-    # bees_4 = [Next2Bee() for i in range(count)]
+    bees_2 = [GreedyBee() for i in range(count)]
+    bees_3 = [NextBee() for i in range(count)]
+    bees_4 = [Next2Bee() for i in range(count)]
 
     bee = WorkerBee()
     bee.move_at(Point(1000, 1000))  # проверка на выход за границы экрана

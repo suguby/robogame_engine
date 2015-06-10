@@ -35,7 +35,7 @@ def get_tangens(angle):
     return math.tan(angle / 180.0 * math.pi)
 
 
-class Point():
+class Point(object):
     """
         Screen point
     """
@@ -142,7 +142,7 @@ class Point():
         return 0
 
 
-class Vector():
+class Vector(object):
     """
         Mathematical vector
     """

@@ -75,12 +75,6 @@ class GameObject(object):
     def meter_2(self):
         return 0.0
 
-    def __str__(self):
-        return u"{}:{}".format(self.__class__.__name__, self.id)
-
-    def __repr__(self):
-        return str(self)
-
     def add_event(self, event):
         self._events.put(event)
 
@@ -185,7 +179,6 @@ class GameObject(object):
 
     def __unicode__(self):
         return str(self)
-
 
     # def _need_turning(self):
     # return self.revolvable and int(self.course) != int(self.vector.angle)
