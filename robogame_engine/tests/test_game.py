@@ -3,7 +3,8 @@
 import math
 import random
 
-from robogame_engine import GameObject, Scene, constants
+from robogame_engine import GameObject, Scene
+from robogame_engine.constants import ROTATE_FLIP_VERTICAL
 from robogame_engine.geometry import Point
 from robogame_engine.states import StateMoving
 from robogame_engine.theme import theme
@@ -122,7 +123,7 @@ class SceneObjectsGetter:
 class Bee(HoneyHolder, GameObject, SceneObjectsGetter):
     _MAX_HONEY = 100
     sprite_filename = 'bee.png'  # TODO вынести в тему, по имени класса
-    rotate_mode = constants.FLIP_BOTH
+    rotate_mode = ROTATE_FLIP_VERTICAL
     radius = 44
     _part_of_team = True
     __my_beehive = None

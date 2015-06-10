@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 
 import os
 import random
@@ -12,13 +13,13 @@ from pygame.transform import flip
 from pygame.draw import line, circle, rect, aalines
 from pygame.display import set_caption, set_mode
 from pygame.time import Clock
-from robogame_engine import constants
+from robogame_engine.constants import (ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL,
+                                       ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH)
 
 from robogame_engine.geometry import Point
 
 _max_layers = 5
 _sprites_by_layer = [Group() for i in range(_max_layers + 1)]
-_images_cash = {}
 
 theme = None  # global constants source, inited in UI.__init__
 
@@ -33,6 +34,7 @@ class RoboSprite(DirtySprite):
         """
             Link object with its sprite
         """
+        self.__images_cash = defaultdict(dict)
         self.id = id
         self.status = status
 
@@ -110,24 +112,20 @@ class RoboSprite(DirtySprite):
         """
         self.rect.center = Point(self.status.x, self.status.y).to_screen()
         rotate_mode = self.status.rotate_mode
-        if rotate_mode != constants.NO_TURN:
-            if rotate_mode == constants.TURNING:
-                self.image = _rotate_about_center(
-                    image=self.images[0],
-                    image_name=self.status.sprite_filename,
-                    angle=self.status.course
-                )
-            elif rotate_mode == constants.FLIP_VERTICAL:
+        if rotate_mode != ROTATE_NO_TURN:
+            if rotate_mode == ROTATE_TURNING:
+                self.image = self._rotate_about_center()
+            elif rotate_mode == ROTATE_FLIP_VERTICAL:
                 if 90 <= self.status.course <= 270:
                     self.image = self.images[1].copy()
                 else:
                     self.image = self.images[0].copy()
-            elif rotate_mode == constants.FLIP_HORIZONTAL:
+            elif rotate_mode == ROTATE_FLIP_HORIZONTAL:
                 if self.status.course > 180:
                     self.image = self.images[2].copy()
                 else:
                     self.image = self.images[0].copy()
-            elif rotate_mode == constants.FLIP_BOTH:
+            elif rotate_mode == ROTATE_FLIP_BOTH:
                 if 90 <= self.status.course <= 180:
                     self.image = self.images[1].copy()
                 elif 180 < self.status.course <= 270:
@@ -150,6 +148,24 @@ class RoboSprite(DirtySprite):
         if hasattr(self.status, 'debug') and self.status.debug:
             self._show_id()
             self._show_detection()
+
+    def _rotate_about_center(self):
+        """
+            rotate an image while keeping its center and size
+        """
+        image = self.images[0]
+        image_name = self.status.sprite_filename
+        angle = int(self.status.course)
+        try:
+            return self.__images_cash[image_name][angle].copy()
+        except KeyError:
+            orig_rect = image.get_rect()
+            rot_image = pygame.transform.rotate(image, angle)
+            rot_rect = orig_rect.copy()
+            rot_rect.center = rot_image.get_rect().center
+            rot_image = rot_image.subsurface(rot_rect).copy()
+            self.__images_cash[image_name][angle] = rot_image
+            return rot_image.copy()
 
 
 class UserInput:
@@ -433,24 +449,3 @@ def load_image(name, colorkey=None):
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey, RLEACCEL)
     return image
-
-
-def _rotate_about_center(image, image_name, angle):
-    """
-        rotate an image while keeping its center and size
-    """
-    global _images_cash
-    angle = int(angle)
-    try:
-        return _images_cash[image_name][angle].copy()
-    except:
-        orig_rect = image.get_rect()
-        rot_image = pygame.transform.rotate(image, angle)
-        rot_rect = orig_rect.copy()
-        rot_rect.center = rot_image.get_rect().center
-        rot_image = rot_image.subsurface(rot_rect).copy()
-        try:
-            _images_cash[image_name][angle] = rot_image
-        except:
-            _images_cash[image_name] = {angle: rot_image}
-        return rot_image.copy()

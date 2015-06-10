@@ -2,15 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from Queue import Queue
-from random import randint
-from robogame_engine import constants
 
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
+from robogame_engine.constants import ROTATE_NO_TURN
 from robogame_engine.theme import theme
 from .states import StateStopped
 from .utils import logger
 from .events import (EventHearbeat, EventStopped, EventBorned)
-from .geometry import Point, Vector
+from .geometry import Point
 
 
 class GameObject(object):
@@ -20,7 +19,7 @@ class GameObject(object):
     sprite_filename = None  # переопределить в наследниках
     radius = 10
     animated = False
-    rotate_mode = constants.NO_TURN
+    rotate_mode = ROTATE_NO_TURN
     selectable = True
 
     _part_of_team = False
