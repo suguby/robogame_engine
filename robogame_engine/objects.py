@@ -3,6 +3,7 @@
 
 from Queue import Queue
 from random import randint
+from robogame_engine import constants
 
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
 from robogame_engine.theme import theme
@@ -19,7 +20,7 @@ class GameObject(object):
     sprite_filename = None  # переопределить в наследниках
     radius = 10
     animated = False
-    rotatable = True
+    rotate_mode = constants.NO_TURN
     selectable = True
 
     _part_of_team = False
@@ -35,17 +36,15 @@ class GameObject(object):
         cls.__container = container
         cls.__max_speed = max_speed
 
-    def __init__(self, pos=None, angle=None):
+    def __init__(self, pos=None, angle=None):  # TODO выпилить угол
         if self._scene is None:
             raise Exception("You must create Scene instance at first!")
         self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
         self.coord = Point(pos) if pos else Point(0, 0)
+        self.course = 0.0
         self.target = None
-        if angle is None:
-            angle = randint(0, 360)
-        self.vector = Vector(angle, 0)
         self.state = StateStopped(obj=self)
 
         self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
@@ -53,7 +52,7 @@ class GameObject(object):
         self._commands = Queue()
         self._selected = False
         self.add_event(EventBorned(self))
-        self.debug('born {coord} {vector}')
+        self.debug('born {coord} {course}')
 
     @property
     def x(self):
@@ -62,10 +61,6 @@ class GameObject(object):
     @property
     def y(self):
         return self.coord.y
-
-    @property
-    def course(self):
-        return self.vector.angle
 
     @property
     def team(self):
@@ -107,7 +102,7 @@ class GameObject(object):
         """
             Proceed one game step - do turns, movements and boundary check
         """
-        self.debug('step {coord} {vector} {state}')
+        self.debug('step {coord} {course} {state}')
         self.state.step()
         self._check_runout()
         self._heartbeat()
@@ -184,10 +179,14 @@ class GameObject(object):
         log_fun(pattern.format(**kwargs))
 
     def __str__(self):
-        return 'obj({id}, {coord} {vector} cour={course:1f} {_state})'.format(**self.__dict__)
+        return 'obj({id}, {coord} cour={course:1f} {_state})'.format(**self.__dict__)
 
     def __repr__(self):
         return str(self)
+
+    def __unicode__(self):
+        return str(self)
+
 
     # def _need_turning(self):
     # return self.revolvable and int(self.course) != int(self.vector.angle)

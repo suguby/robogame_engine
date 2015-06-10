@@ -12,6 +12,7 @@ from pygame.transform import flip
 from pygame.draw import line, circle, rect, aalines
 from pygame.display import set_caption, set_mode
 from pygame.time import Clock
+from robogame_engine import constants
 
 from robogame_engine.geometry import Point
 
@@ -108,10 +109,35 @@ class RoboSprite(DirtySprite):
             Do not call in your code!
         """
         self.rect.center = Point(self.status.x, self.status.y).to_screen()
-        if self.status.rotatable:
-            self.image = _rotate_about_center(self.images[0],
-                                              self.status.sprite_filename,
-                                              self.status.course)
+        rotate_mode = self.status.rotate_mode
+        if rotate_mode != constants.NO_TURN:
+            if rotate_mode == constants.TURNING:
+                self.image = _rotate_about_center(
+                    image=self.images[0],
+                    image_name=self.status.sprite_filename,
+                    angle=self.status.course
+                )
+            elif rotate_mode == constants.FLIP_VERTICAL:
+                if 90 <= self.status.course <= 270:
+                    self.image = self.images[1].copy()
+                else:
+                    self.image = self.images[0].copy()
+            elif rotate_mode == constants.FLIP_HORIZONTAL:
+                if self.status.course > 180:
+                    self.image = self.images[2].copy()
+                else:
+                    self.image = self.images[0].copy()
+            elif rotate_mode == constants.FLIP_BOTH:
+                if 90 <= self.status.course <= 180:
+                    self.image = self.images[1].copy()
+                elif 180 < self.status.course <= 270:
+                    self.image = self.images[2].copy()
+                elif 270 < self.status.course < 360:
+                    self.image = self.images[3].copy()
+                else:
+                    self.image = self.images[0].copy()
+            else:
+                self.image = self.images[0].copy()
         elif self.status.animated:
             # TODO брать таки кадры из гифок
             self._drawed_count += 1

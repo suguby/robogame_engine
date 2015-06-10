@@ -3,7 +3,7 @@
 import math
 import random
 
-from robogame_engine import GameObject, Scene
+from robogame_engine import GameObject, Scene, constants
 from robogame_engine.geometry import Point
 from robogame_engine.states import StateMoving
 from robogame_engine.theme import theme
@@ -122,7 +122,7 @@ class SceneObjectsGetter:
 class Bee(HoneyHolder, GameObject, SceneObjectsGetter):
     _MAX_HONEY = 100
     sprite_filename = 'bee.png'  # TODO вынести в тему, по имени класса
-    rotatable = False
+    rotate_mode = constants.FLIP_BOTH
     radius = 44
     _part_of_team = True
     __my_beehive = None
@@ -164,7 +164,6 @@ class Bee(HoneyHolder, GameObject, SceneObjectsGetter):
 class Flower(HoneyHolder, GameObject):
     sprite_filename = 'flower.png'
     radius = 50
-    rotatable = False
     selectable = False
     _MIN_HONEY = 100
     _MAX_HONEY = 200
@@ -181,7 +180,6 @@ class Flower(HoneyHolder, GameObject):
 class BeeHive(HoneyHolder, GameObject):
     sprite_filename = 'beehive.png'
     radius = 75
-    rotatable = False
     selectable = False
 
     def __init__(self, pos, max_honey):
@@ -211,7 +209,7 @@ class Rect:
 class Beegarden(Scene, SceneObjectsGetter):
     check_collisions = False
     _FLOWER_JITTER = 0.7
-    _HONEY_SPEED_FACTOR = 0.2
+    _HONEY_SPEED_FACTOR = 0.02
     __beehives = []
 
     def prepare(self, flowers_count=5, beehives_count=1):
@@ -360,6 +358,9 @@ class WorkerBee(Bee):
     def on_honey_unloaded(self):
         self.go_next_flower()
 
+    def sting(self, bee):
+        pass
+
 
 class GreedyBee(WorkerBee):
 
@@ -392,14 +393,14 @@ if __name__ == '__main__':
     beegarden = Beegarden(
         name="My little garden",
         beehives_count=1,
-        flowers_count=7,
-        speed=50,
+        flowers_count=5,
+        speed=3,
         # field=(800, 600),
         # theme='dark',
     )
 
     count = 2
-    bees = [WorkerBee() for i in range(count)]
+    bees = [WorkerBee(pos=Point(400,400)) for i in range(count)]
     # bees_2 = [GreedyBee() for i in range(count)]
     # bees_3 = [NextBee() for i in range(count)]
     # bees_4 = [Next2Bee() for i in range(count)]

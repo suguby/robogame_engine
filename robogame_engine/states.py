@@ -30,20 +30,19 @@ class StateTurning(ObjectState):
 
     def step(self):
         obj = self.obj
-        if obj.rotatable:
-            delta = self.vector.angle - obj.course
-            if abs(delta) < obj.TURN_SPEED:
-                obj.course = obj.vector.angle
-                if self.target:
-                    obj.state = StateMoving(obj=obj, target=self.target)
-                else:
-                    obj.state = StateStopped(obj=obj)
+        delta = self.vector.angle - obj.course
+        if abs(delta) < obj.TURN_SPEED:
+            obj.course = obj.vector.angle
+            if self.target:
+                obj.state = StateMoving(obj=obj, target=self.target)
             else:
-                if -180 < delta < 0 or delta > 180:
-                    obj.course -= obj.TURN_SPEED
-                else:
-                    obj.course += obj.TURN_SPEED
-                obj.course = normalise_angle(obj.course)
+                obj.state = StateStopped(obj=obj)
+        else:
+            if -180 < delta < 0 or delta > 180:
+                obj.course -= obj.TURN_SPEED
+            else:
+                obj.course += obj.TURN_SPEED
+            obj.course = normalise_angle(obj.course)
 
 
 class StateMoving(ObjectState):
@@ -59,6 +58,7 @@ class StateMoving(ObjectState):
 
     def step(self):
         self.obj.coord.add(self.vector)
+        self.obj.course = self.vector.angle
         if self.obj.coord.near(self.target):
             self.obj.state = StateStopped(obj=self.obj)
             event = EventStoppedAtTargetPoint(self.target)
