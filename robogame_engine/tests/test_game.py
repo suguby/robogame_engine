@@ -134,6 +134,10 @@ class Bee(HoneyHolder, GameObject, SceneObjectsGetter):
         self._objects_holder = self._scene
 
     @property
+    def sprite_filename(self):
+        return 'bee-{}.png'.format(self.team)
+
+    @property
     def my_beehive(self):
         if self.__my_beehive is None:
             try:
