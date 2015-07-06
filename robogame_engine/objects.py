@@ -16,7 +16,6 @@ class GameObject(object):
     """
         Main game object
     """
-    sprite_filename = None  # переопределить в наследниках
     radius = 10
     animated = False
     rotate_mode = ROTATE_NO_TURN
@@ -52,6 +51,13 @@ class GameObject(object):
         self._selected = False
         self.add_event(EventBorned(self))
         self.debug('born {coord} {course}')
+
+    @property
+    def sprite_filename(self):
+        try:
+            return self._sprite_filename
+        except AttributeError:
+            return "{}.png".format(self.__class__.__name__.lower())
 
     @property
     def x(self):

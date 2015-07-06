@@ -122,7 +122,7 @@ class SceneObjectsGetter:
 
 class Bee(HoneyHolder, GameObject, SceneObjectsGetter):
     _MAX_HONEY = 100
-    sprite_filename = 'bee.png'  # TODO вынести в тему, по имени класса
+    _sprite_filename = 'bee.png'
     rotate_mode = ROTATE_FLIP_VERTICAL
     radius = 44
     _part_of_team = True
@@ -163,7 +163,6 @@ class Bee(HoneyHolder, GameObject, SceneObjectsGetter):
 
 
 class Flower(HoneyHolder, GameObject):
-    sprite_filename = 'flower.png'
     radius = 50
     selectable = False
     _MIN_HONEY = 100
@@ -179,7 +178,6 @@ class Flower(HoneyHolder, GameObject):
         pass
 
 class BeeHive(HoneyHolder, GameObject):
-    sprite_filename = 'beehive.png'
     radius = 75
     selectable = False
 
@@ -394,13 +392,13 @@ if __name__ == '__main__':
     beegarden = Beegarden(
         name="My little garden",
         beehives_count=4,
-        flowers_count=10,
+        flowers_count=80,
         speed=3,
         # field=(800, 600),
-        # theme='dark',
+        # theme_mod_path='dark_theme',
     )
 
-    count = 6
+    count = 10
     bees = [WorkerBee(pos=Point(400,400)) for i in range(count)]
     bees_2 = [GreedyBee() for i in range(count)]
     bees_3 = [NextBee() for i in range(count)]
