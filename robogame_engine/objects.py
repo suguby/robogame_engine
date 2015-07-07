@@ -21,6 +21,8 @@ class GameObject(object):
     rotate_mode = ROTATE_NO_TURN
     selectable = True
 
+    counter_1_position = None
+
     _part_of_team = False
     __objects_count = 0
     __container = None
@@ -80,6 +82,10 @@ class GameObject(object):
     @property
     def meter_2(self):
         return 0.0
+
+    @property
+    def counter(self):
+        return None
 
     def add_event(self, event):
         self._events.put(event)
@@ -253,7 +259,7 @@ class ObjectStatus:
     """
         Hold game object state, useful for exchange between processes
     """
-    SEND_TYPES = (bool, int, float, str, unicode, )
+    SEND_TYPES = (bool, int, float, str, unicode, dict, )
 
     def __init__(self, obj):
         for attr_name in dir(obj):

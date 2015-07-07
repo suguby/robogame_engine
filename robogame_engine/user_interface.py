@@ -71,6 +71,19 @@ class RoboSprite(DirtySprite):
     def __repr__(self):
         return str(self)
 
+    @property
+    def font(self):
+        if not hasattr(self, '_font'):
+            self._font = pygame.font.Font(None, self.counter_attrs['size'])
+        return self._font
+
+    @property
+    def counter_attrs(self):
+        try:
+            return self.status.counter_attrs
+        except AttributeError:
+            return dict(size=27, position=(30, 30), color=(128, 128, 128))
+
     def _show_meters(self):
         if hasattr(self.status, 'meter_1') and self.status.meter_1 > 0:
             bar_px = int(self.status.meter_1 * self.rect.width)
@@ -78,6 +91,10 @@ class RoboSprite(DirtySprite):
         if hasattr(self.status, 'meter_2') and self.status.meter_2 > 0:
             bar_px = int(self.status.meter_2 * self.rect.width)
             line(self.image, theme.METER_2_COLOR, (0, 5), (bar_px, 5), 2)
+        if hasattr(self.status, 'counter') and self.status.counter is not None:
+            txt = "{}".format(self.status.counter)
+            txt_image = self.font.render(txt, 1, self.counter_attrs['color'])
+            self.image.blit(txt_image, self.counter_attrs['position'])
 
     def _show_selected(self):
         if self._selected:

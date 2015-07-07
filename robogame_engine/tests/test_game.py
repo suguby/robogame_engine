@@ -171,6 +171,7 @@ class Flower(HoneyHolder, GameObject):
     selectable = False
     _MIN_HONEY = 100
     _MAX_HONEY = 200
+    counter_attrs = dict(size=20, position=(43, 45), color=(128, 128, 128))
 
     def __init__(self, pos, max_honey=None):
         super(Flower, self).__init__(pos=pos)
@@ -181,13 +182,24 @@ class Flower(HoneyHolder, GameObject):
     def update(self):
         pass
 
+    @property
+    def counter(self):
+        return self.honey
+
+
 class BeeHive(HoneyHolder, GameObject):
     radius = 75
     selectable = False
+    counter_attrs = dict(size=30, position=(60, 92), color=(255, 255, 0))
 
     def __init__(self, pos, max_honey):
         super(BeeHive, self).__init__(pos=pos)
         self.set_inital_honey(loaded=0, maximum=max_honey)
+
+    @property
+    def counter(self):
+        return self.honey
+
 
 class Rect:
 
