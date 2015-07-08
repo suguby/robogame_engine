@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from Queue import Queue
+from collections import defaultdict
 
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
 from robogame_engine.constants import ROTATE_NO_TURN
@@ -36,7 +37,7 @@ class GameObject(object):
         cls.__container = container
         cls.__max_speed = max_speed
 
-    def __init__(self, pos=None, angle=None):  # TODO выпилить угол
+    def __init__(self, pos=None):
         if self._scene is None:
             raise Exception("You must create Scene instance at first!")
         self.__container.append(self)
@@ -260,15 +261,25 @@ class ObjectStatus:
         Hold game object state, useful for exchange between processes
     """
     SEND_TYPES = (bool, int, float, str, unicode, dict, )
+    __fields = defaultdict(list)
 
     def __init__(self, obj):
-        for attr_name in dir(obj):
-            if attr_name.startswith('_'):
-                continue
+        for attr_name in self.fields(obj):
             attr = getattr(obj, attr_name)
-            if callable(attr):
-                continue
-            for ttype in self.SEND_TYPES:
-                if isinstance(attr, ttype):
-                    setattr(self, attr_name, attr)
-                    break
+            setattr(self, attr_name, attr)
+
+    def fields(self, obj):
+        class_name = obj.__class__.__name__
+        if class_name not in self.__fields:
+            for attr_name in dir(obj):
+                if attr_name.startswith('_'):
+                    continue
+                attr = getattr(obj, attr_name)
+                if callable(attr):
+                    continue
+                for ttype in self.SEND_TYPES:
+                    if isinstance(attr, ttype):
+                        self.__fields[class_name].append(attr_name)
+                        break
+        return self.__fields[class_name]
+
