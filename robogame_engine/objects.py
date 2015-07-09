@@ -22,8 +22,7 @@ class GameObject(object):
     rotate_mode = ROTATE_NO_TURN
     selectable = True
 
-    counter_1_position = None
-
+    _sprite_filename = None
     _part_of_team = False
     __objects_count = 0
     __container = None
@@ -57,9 +56,9 @@ class GameObject(object):
 
     @property
     def sprite_filename(self):
-        try:
+        if self._sprite_filename:
             return self._sprite_filename
-        except AttributeError:
+        else:
             return "{}.png".format(self.__class__.__name__.lower())
 
     @property
