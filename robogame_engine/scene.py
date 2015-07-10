@@ -59,6 +59,12 @@ class Scene:
     def prepare(self, **kwargs):
         raise NotImplementedError()
 
+    def remove_object(self, obj):
+        try:
+            self.objects.remove(obj)
+        except IndexError:
+            logger.warning("Try to remove unexists obj {}".format(obj))
+
     def get_objects_by_type(self, cls):
         return [obj for obj in self.objects if isinstance(obj, cls)]
 
