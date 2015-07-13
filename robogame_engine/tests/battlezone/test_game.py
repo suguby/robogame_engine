@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import math
-import random
-
 from robogame_engine import GameObject, Scene
-from robogame_engine.constants import ROTATE_FLIP_VERTICAL, ROTATE_TURNING
+from robogame_engine.constants import ROTATE_TURNING
 from robogame_engine.geometry import Point, Vector
-from robogame_engine.states import StateMoving
 from robogame_engine.theme import theme
 
 
@@ -18,7 +14,7 @@ class Gun:
         self.heat = 8
         self._state = 'reloading'
 
-    def _game_step(self):
+    def game_step(self):
         """
             Internal function
         """
@@ -34,11 +30,14 @@ class Gun:
             Fire from gun
         """
         if self._state == 'loaded':
-            start_point = Point(self.owner.coord) + \
-                          Vector(self.owner.course,
-                                          self.owner.radius // 2 + 12)
+            start_point = Point(
+                self.owner.coord
+            ) + Vector(
+                self.owner.course,
+                self.owner.radius // 2 + 12
+            )
             shot = Shot(pos=start_point, direction=self.owner.course)
-            self.heat = tank_gun_heat_after_fire
+            self.heat = theme.TANK_GUN_HEAT_AFTER_FIRE
             self._state = 'reloading'
             return shot
 
@@ -54,15 +53,14 @@ class Tank(GameObject):
     _sprite_filename = 'tank_blue.png'
     _layer = 2
 
-    def __init__(self, pos=None, angle=None):
+    def __init__(self, pos=None):
         """
             create a tank in a specified point on the screen
         """
-        GameObject.__init__(self, pos)
+        super(Tank, self).__init__(pos=pos)
         self.gun = Gun(self)
         self._armor = float(theme.TANK_MAX_ARMOR)
         self.explosion = None
-        self._events.put(EventBorn())
 
     @property
     def armor(self):
@@ -72,15 +70,12 @@ class Tank(GameObject):
     def gun_heat(self):
         return self.gun.heat
 
-    def _game_step(self):
-        """
-            Internal function to update the state variables
-        """
-        if self._armor < tank_max_armor:
-            self._armor += tank_armor_renewal_rate
-        self.gun._game_step()
+    def game_step(self):
+        if self._armor < theme.TANK_MAX_ARMOR:
+            self._armor += theme.TANK_ARMOR_RENEWAL_RATE
+        self.gun.game_step()
+        super(Tank, self).game_step()
         self._update_explosion()
-        GameObject._game_step(self)
 
     def _update_explosion(self):
         """
@@ -88,12 +83,10 @@ class Tank(GameObject):
         """
         if self.explosion:
             self.explosion.coord = Point(self.coord)
-            self.debug("tank course %s explosion.vector.angle %s "
-                       "explosion.coord %s", self.course,
-                       self.explosion.vector.angle, self.explosion.coord)
-            expl_shift = Vector(self.course
-                                         + self.explosion.vector.angle,
-                                         self.explosion.vector.module)
+            expl_shift = Vector(
+                self.course + self.explosion.vector.angle,
+                self.explosion.vector.module
+            )
             self.explosion.coord.add(expl_shift)
             self.debug("after add explosion is %s", self.explosion)
 
@@ -111,63 +104,50 @@ class Tank(GameObject):
         """
         self.stop()
         Explosion(self.coord, self)  # взрыв на нашем месте
-        if self in self.container:
-            self.container.remove(self)
+        self._scene.remove_object(self)
 
     def hit(self, shot):
         """
             Contact with our tank shell
         """
         self._armor -= shot.power
-        self._events.put(EventHit())
+        self.add_event(EventHit())
         if self._armor <= 0:
             if shot.owner:  # еще не был убит
                 shot.owner._events.put(EventTargetDestroyed())
             self.detonate()
 
-    def born(self):
+    def on_born(self):
         """
             Event: born
         """
         pass
 
-    def stopped(self):
-        """
-            Event: stopped
-        """
-        pass
-
-    def stopped_at_target_point(self, point):
-        """
-            Event: stopped near the target
-        """
-        pass
-
-    def gun_reloaded(self):
+    def on_gun_reloaded(self):
         """
             Event: the gun is ready to fire
         """
         pass
 
-    def hitted(self):
+    def on_hitted(self):
         """
             Event: contact with our tank shell
         """
         pass
 
-    def collided_with(self, obj):
+    def on_collided_with(self, obj):
         """
             Event: contact with our tank shell
         """
         pass
 
-    def target_destroyed(self):
+    def on_target_destroyed(self):
         """
             Event: contact with our tank shell
         """
         pass
 
-    def in_tank_radar_range(self, objects):
+    def on_radar_detect(self, objects):
         """
             Event: contact with our tank shell
         """
@@ -178,14 +158,14 @@ class StaticTarget(Tank):
     """
         A static target
     """
-    _img_file_name = 'tank_red.png'
-    _selectable = False  # обьект нельзя выделить мышкой
+    _sprite_filename = 'tank_red.png'
+    selectable = False  # обьект нельзя выделить мышкой
 
     def __init__(self, pos=None, angle=None, auto_fire=False):
         Tank.__init__(self, pos=pos, angle=angle)
         self.auto_fire = auto_fire
 
-    def gun_reloaded(self):
+    def on_gun_reloaded(self):
         if self.auto_fire:
             self.fire()
 
@@ -194,26 +174,26 @@ class Target(Tank):
     """
         A target
     """
-    _img_file_name = 'tank_red.png'
+    _sprite_filename = 'tank_red.png'
     _selectable = False  # обьект нельзя выделить мышкой
 
     def __init__(self, pos=None, angle=None, auto_fire=False):
         Tank.__init__(self, pos=pos, angle=angle)
         self.auto_fire = auto_fire
 
-    def born(self):
+    def on_born(self):
         self.move_at(target=random_point())
 
-    def stopped(self):
+    def on_stop(self):
         self.debug("stopped")
         self.move_at(target=random_point())
 
-    def gun_reloaded(self):
+    def on_gun_reloaded(self):
         self.debug("gun_reloaded")
         if self.auto_fire:
             self.fire()
 
-    def collided_with(self, obj):
+    def on_collided_with(self, obj):
         self.debug("collided_with %s", obj.id)
         self.move_at(target=random_point())
 
@@ -222,10 +202,9 @@ class Shot(GameObject):
     """
         The shell. Flies in a straight until it hits the target.
     """
-    _img_file_name = 'shot.png'
     _layer = 3
     radius = 4  # collision detect
-    _selectable = False  # обьект нельзя выделить мышкой
+    selectable = False  # обьект нельзя выделить мышкой
 
     def __init__(self, pos, direction):
         """
@@ -248,7 +227,8 @@ class Shot(GameObject):
             self.owner.shot = None
             self.owner = None
 
-    def _game_step(self):
+    def game_step(self):
+        super(Shot, self).game_step()
         self.debug('%s', self)
         self.life -= 1
         if not self.life or not self._state == 'moving':
@@ -263,13 +243,12 @@ class Explosion(GameObject):
     """
     # TODO подумать куда отнести взрывы,
     # TODO ведь в игоровой механике они не участвуют
-    _img_file_name = 'explosion.png'
     _layer = user_interface._max_layers
     radius = 0  # collision detect
     defaultlife = 12
     animcycle = 3
-    _selectable = False  # обьект нельзя выделить мышкой
-    _animated = True  # надо анимировать обьект TODO сделать анимацию в гифке
+    selectable = False  # обьект нельзя выделить мышкой
+    animated = True  # надо анимировать обьект TODO сделать анимацию в гифке
 
     def __init__(self, explosion_coord, hitted_obj):
         GameObject.__init__(self, explosion_coord, revolvable=False)
@@ -280,25 +259,23 @@ class Explosion(GameObject):
         self.owner._update_explosion()
         self.life = self.defaultlife
 
-    def _game_step(self):
+    def game_step(self):
+        super(Explosion, self).game_step()
         self.life -= 1
 #        self.image = self.images[self.life // self.animcycle % 2]
         if self.life <= 0:
-            self.container.remove(self)
+            self._scene.remove_object(self)
             self.owner.explosion = None
             self.owner = None
-        GameObject._game_step(self)
 
 
 class SmallExplosion(Explosion):
     """
         The explosion of the shell.
     """
-    _img_file_name = 'small_explosion.png'
 
 
 class SimpleTank(Tank):
-    _img_file_name = 'tank_blue.png'
 
     def turn_around(self):
         self.turn_to(self.course + 180)
@@ -348,31 +325,31 @@ class SimpleTank(Tank):
                 else:
                     self.to_search()
 
-    def born(self):
+    def on_born(self):
         self.to_search()
 
-    def stopped(self):
+    def on_stop(self):
         self.to_search()
 
     def stopped_at_target(self):
         self.to_search()
 
-    def gun_reloaded(self):
+    def on_gun_reloaded(self):
         if self.state == 'hunt':
             if self.target and self.target.armor > 0:
                 self.fire()
             else:
                 self.to_search()
 
-    def target_destroyed(self):
+    def on_target_destroyed(self):
         self.to_search()
 
-    def collided_with(self, obj):
+    def on_collided_with(self, obj):
         self.debug("collided_with state %s", self.state)
         if self.state == 'search':
             self.make_decision(objects=[obj])
 
-    def in_tank_radar_range(self, objects):
+    def on_radar_detect(self, objects):
         for obj in objects:
             self.debug("in radar obj with armor %s", obj.armor)
         self.debug("in_tank_radar_range state %s target",
@@ -385,7 +362,7 @@ class SimpleTank(Tank):
 
 class CooperativeTank(Tank):
     """Танк. Может ездить по экрану."""
-    _img_file_name = 'tank_green.png'
+    _sprite_filename = 'tank_green.png'
     all_tanks = []
     target = None
     _min_armor = 50
@@ -393,27 +370,27 @@ class CooperativeTank(Tank):
     state = 'at_home'
     retreat_point = Point(100, constants.field_height - 100)
 
-    def born(self):
+    def on_born(self):
         self.__class__.all_tanks.append(self)
         self.determine_state()
 
-    def stopped(self):
+    def on_stop(self):
         self.determine_state()
 
-    def stopped_at_target_point(self, point):
+    def on_stop_at_target(self, target):
         self.determine_state()
 
-    def gun_reloaded(self):
+    def on_gun_reloaded(self):
         self.determine_state()
 
-    def hitted(self):
+    def on_hitted(self):
         self.determine_state()
 
     def hearbeat(self):
         self.debug("hearbeat")
         self.determine_state()
 
-    def in_tank_radar_range(self, objects):
+    def on_radar_detect(self, objects):
         self.determine_target(objects)
         self.determine_state()
 
@@ -516,17 +493,17 @@ if __name__ == '__main__':
     )
 
     count = 10
-    deploy1 = Point(constants.field_width - 100, 100)
+    deploy1 = Point(theme.FIELD_WIDTH - 100, 100)
     army_1 = [SimpleTank(pos=deploy1) for i in range(5)]
 
-    deploy2 = Point(100, constants.field_height - 100)
+    deploy2 = Point(100, theme.FIELD_HEIGHT - 100)
     army_2 = [CooperativeTank(pos=deploy2) for i in range(5)]
 
     deploy3 = Point(100, 100)
     targets = [Target(pos=deploy3) for i in range(4)]
     targets += [Target(pos=deploy3, auto_fire=True) for i in range(4)]
 
-    second_pos = (constants.field_width - 20, constants.field_height - 20)
+    second_pos = (theme.FIELD_WIDTH - 20, theme.FIELD_HEIGHT - 20)
     targets += [
         StaticTarget(pos=(20, 20), angle=90),
         StaticTarget(pos=second_pos, angle=-90, auto_fire=True)
