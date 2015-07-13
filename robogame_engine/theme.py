@@ -27,6 +27,6 @@ class Theme(object):
                             item, self.mod_path
                         ))
             self.__dict__[item] = value
-        return self.__dict__[item]
+        return self.__dict__[item]  # todo через setattr
 
 theme = Theme()

@@ -229,7 +229,11 @@ class UserInterface:
 
         self.background = pygame.Surface(self.screen.get_size())  # и ее размер
         self.background = self.background.convert()
-        self.background.fill(theme.BACKGROUND_COLOR)  # заполняем цветом
+        try:
+            image = load_image(theme.BACKGROUND_IMAGE, -1)
+            self.background.blit(image, (0, 0))
+        except (SystemExit, AttributeError):
+            self.background.fill(theme.BACKGROUND_COLOR)  # заполняем цветом
         self.clear_screen()
 
         self.all = pygame.sprite.LayeredUpdates()
