@@ -7,7 +7,7 @@ from collections import defaultdict
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
 from robogame_engine.constants import ROTATE_NO_TURN
 from robogame_engine.theme import theme
-from .states import StateStopped
+from .states import StateStopped, StateMoving
 from .utils import logger
 from .events import (EventHearbeat, EventStopped, EventBorned)
 from .geometry import Point
@@ -36,14 +36,14 @@ class GameObject(object):
         cls.__container = container
         cls.__max_speed = max_speed
 
-    def __init__(self, pos=None):
+    def __init__(self, pos=None, direction=0.0):
         if self._scene is None:
             raise Exception("You must create Scene instance at first!")
         self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
         self.coord = Point(pos) if pos else Point(0, 0)
-        self.course = 0.0
+        self.course = direction
         self.target = None
         self.state = StateStopped(obj=self)
 
@@ -86,6 +86,10 @@ class GameObject(object):
     @property
     def counter(self):
         return None
+
+    @property
+    def is_moving(self):
+        return isinstance(StateMoving, self.state)
 
     def add_event(self, event):
         self._events.put(event)

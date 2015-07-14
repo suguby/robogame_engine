@@ -38,7 +38,7 @@ class EventStoppedAtTargetPoint(GameEvent):
 class EventCollide(GameEvent):
 
     def handle(self, obj):
-        obj.on_collide_with(self._event_objs)
+        obj.on_collided_with(self._event_objs)
 
 
 class EventHearbeat(GameEvent):

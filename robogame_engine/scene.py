@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from multiprocessing import Pipe, Process
+from random import randint
 import time
 from robogame_engine.events import EventCollide
-from robogame_engine.geometry import Vector
+from robogame_engine.geometry import Vector, Point
 
 from robogame_engine.objects import ObjectStatus, GameObject
 from robogame_engine.theme import theme
@@ -160,3 +161,9 @@ class Scene:
 def start_ui(name, child_conn):
     ui = UserInterface(name, theme)
     ui.run(child_conn)
+
+
+def random_point():
+    x = randint(0, theme.FIELD_WIDTH)
+    y = randint(0, theme.FIELD_HEIGHT)
+    return Point(x, y)
