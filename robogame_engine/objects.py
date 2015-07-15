@@ -21,6 +21,7 @@ class GameObject(object):
     animated = False
     rotate_mode = ROTATE_NO_TURN
     selectable = True
+    layer = 0
 
     _sprite_filename = None
     _part_of_team = False
@@ -36,14 +37,14 @@ class GameObject(object):
         cls.__container = container
         cls.__max_speed = max_speed
 
-    def __init__(self, pos=None, direction=0.0):
+    def __init__(self, pos=None, direction=0):
         if self._scene is None:
             raise Exception("You must create Scene instance at first!")
         self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
         self.coord = Point(pos) if pos else Point(0, 0)
-        self.course = direction
+        self.course = direction  # TODO везде изменить на direction надо наверно...
         self.target = None
         self.state = StateStopped(obj=self)
 
@@ -89,7 +90,7 @@ class GameObject(object):
 
     @property
     def is_moving(self):
-        return isinstance(StateMoving, self.state)
+        return isinstance(self.state, StateMoving)
 
     def add_event(self, event):
         self._events.put(event)

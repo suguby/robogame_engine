@@ -6,7 +6,7 @@ import os
 import random
 import pygame
 from pygame.locals import *
-from pygame.sprite import Sprite, DirtySprite, Group
+from pygame.sprite import DirtySprite
 
 from pygame.font import Font
 from pygame.transform import flip
@@ -18,9 +18,6 @@ from robogame_engine.constants import (ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FL
 
 from robogame_engine.geometry import Point
 
-_max_layers = 5
-_sprites_by_layer = [Group() for i in range(_max_layers + 1)]
-
 theme = None  # global constants source, inited in UI.__init__
 
 
@@ -28,7 +25,6 @@ class RoboSprite(DirtySprite):
     """
         Show sprites on screen
     """
-    _layer = 0
 
     def __init__(self, id, status):
         """
@@ -38,13 +34,12 @@ class RoboSprite(DirtySprite):
         self.id = id
         self.status = status
 
-        if self._layer > _max_layers:
-            self._layer = _max_layers
-        if self._layer < 0:
-            self._layer = 0
-        self.sprite_containers = (self.sprite_containers,
-                                  _sprites_by_layer[self._layer])
-        Sprite.__init__(self, self.sprite_containers)
+        layer = int(self.status.layer)
+        if layer > theme.MAX_LAYERS:
+            layer = theme.MAX_LAYERS
+        if layer < 0:
+            layer = 0
+        super(RoboSprite, self).__init__(UserInterface.sprites_all, UserInterface.sprites_by_layer[layer])
 
         image = load_image(self.status.sprite_filename, -1)
         self.images = [image, flip(image, 1, 0),
@@ -213,6 +208,8 @@ class UserInterface:
         Show sprites and get feedback from user
     """
     _max_fps = 50  # ограничиваем для стабильности отклика клавы/мыши
+    sprites_by_layer = None
+    sprites_all = None
 
     def __init__(self, name, current_theme):
         """
@@ -221,7 +218,11 @@ class UserInterface:
         global theme
         theme = current_theme
 
+        UserInterface.sprites_all = pygame.sprite.LayeredUpdates()
+        UserInterface.sprites_by_layer = [pygame.sprite.LayeredUpdates(layer=i) for i in range(theme.MAX_LAYERS + 1)]
+
         pygame.init()
+
         screenrect = Rect((0, 0),
                           (theme.FIELD_WIDTH, theme.FIELD_HEIGHT))
         self.screen = set_mode(screenrect.size)
@@ -235,10 +236,6 @@ class UserInterface:
         except (SystemExit, AttributeError):
             self.background.fill(theme.BACKGROUND_COLOR)  # заполняем цветом
         self.clear_screen()
-
-        self.all = pygame.sprite.LayeredUpdates()
-        RoboSprite.sprite_containers = self.all
-        Fps.sprite_containers = self.all
 
         global clock
         clock = Clock()
@@ -277,8 +274,9 @@ class UserInterface:
             except Exception, exc:
                 print exc
         # очистка
-        for sprite in self.all:
-            sprite.kill()
+        for group in self.sprites_by_layer:
+            for sprite in group:
+                sprite.kill()
         pygame.quit()
 
     def update_state(self, objects_status):
@@ -395,12 +393,15 @@ class UserInterface:
         """
 
         # update all the sprites
-        self.all.update()
+        for group in self.sprites_by_layer:
+            group.update()
 
         # draw the scene
-        if self._debug:
+        # if self._debug:
+        if True:  # TODO разобраться с частичным обновлением
             self.screen.blit(self.background, (0, 0))
-            self.all.draw(self.screen)
+            for group in self.sprites_by_layer:
+                group.draw(self.screen)
             # for obj in self.all:
             #     if hasattr(obj, 'status') and \
             #        hasattr(obj.status, 'gun_heat') and \
@@ -409,9 +410,13 @@ class UserInterface:
             pygame.display.flip()
         else:
             # clear/erase the last drawn sprites
-            self.all.clear(self.screen, self.background)
-            dirty = self.all.draw(self.screen)
-            pygame.display.update(dirty)
+            for group in self.sprites_by_layer:
+                group.clear(self.screen, self.background)
+                dirty = group.draw(self.screen)
+                pygame.display.update(dirty)
+            # self.sprites_all.clear(self.screen, self.background)
+            # dirty = self.sprites_all.draw(self.screen)
+            # pygame.display.update(dirty)
 
         # cap the framerate
         clock.tick(self._max_fps)
@@ -424,12 +429,11 @@ class Fps(DirtySprite):
     """
     _layer = 5
 
-    def __init__(self, color=(255, 255, 255), *groups):
+    def __init__(self, color=(255, 255, 255)):
         """
                 Make indicator
             """
-        super(Fps, self).__init__(*groups)
-        pygame.sprite.Sprite.__init__(self, self.sprite_containers)
+        super(Fps, self).__init__(UserInterface.sprites_by_layer[0])
         self.show = False
         self.font = pygame.font.Font(None, 27)
         self.color = color
