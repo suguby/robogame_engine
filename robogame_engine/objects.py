@@ -189,7 +189,7 @@ class GameObject(object):
         log_fun(pattern.format(**kwargs))
 
     def __str__(self):
-        return 'obj({id}, {coord} cour={course:1f} {_state})'.format(**self.__dict__)
+        return 'obj({id}, {coord} cour={course:1f})'.format(**self.__dict__)
 
     def __repr__(self):
         return str(self)

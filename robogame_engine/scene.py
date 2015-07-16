@@ -92,7 +92,7 @@ class Scene:
             if overlap_distance > 1:
                 # may intersect by one pixel
                 step_back_vector = Vector(right, left, overlap_distance // 2)
-                left.debug('step_back_vector %s', step_back_vector)
+                left.debug('step_back_vector {}'.format(step_back_vector))
                 left.coord.add(step_back_vector)
                 right.coord.add(-step_back_vector)
                 left.add_event(EventCollide(right))
