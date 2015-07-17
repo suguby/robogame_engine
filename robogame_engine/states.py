@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from robogame_engine.events import EventStoppedAtTargetPoint
 from robogame_engine.geometry import normalise_angle, Vector
+from robogame_engine.utils import CanLogging
 
 
-class ObjectState(object):
+class ObjectState(CanLogging):
 
     def __init__(self, obj, **kwargs):
         self.obj = obj
@@ -23,6 +24,8 @@ class ObjectState(object):
     def step(self):
         raise NotImplementedError
 
+    def __str__(self):
+        return "{}: {}".format(self.__class__.__name__, self.__dict__)
 
 class StateTurning(ObjectState):
 

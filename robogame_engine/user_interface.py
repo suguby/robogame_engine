@@ -17,11 +17,12 @@ from robogame_engine.constants import (ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FL
                                        ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH)
 
 from robogame_engine.geometry import Point
+from robogame_engine.utils import CanLogging
 
 theme = None  # global constants source, inited in UI.__init__
 
 
-class RoboSprite(DirtySprite):
+class RoboSprite(DirtySprite, CanLogging):
     """
         Show sprites on screen
     """
@@ -203,7 +204,7 @@ class UserInput:
                 self.selected_ids != other.selected_ids)
 
 
-class UserInterface:
+class UserInterface(CanLogging):
     """
         Show sprites and get feedback from user
     """
@@ -287,22 +288,28 @@ class UserInterface:
         old_ids = set(self.game_objects)
         new_game_objects = {}
 
-        for obj_id in old_ids - new_ids:
+        to_delete = old_ids - new_ids
+        for obj_id in to_delete:
             # старые объекты - убиваем спрайты
             sprite = self.game_objects[obj_id]
             sprite.kill()
+        self.info('deleted {count} objs', count=len(to_delete))
 
-        for obj_id in new_ids - old_ids:
+        to_create = new_ids - old_ids
+        for obj_id in to_create:
             # новые объекты - создаем спрайты
             sprite = RoboSprite(id=obj_id, status=objects_status[obj_id])
             new_game_objects[obj_id] = sprite
+        self.info('created {count} objs', count=len(to_create))
 
-        for obj_id in old_ids & new_ids:
+        to_update = old_ids & new_ids
+        for obj_id in to_update:
             # существующие объекты - обновляем состояния
             sprite = self.game_objects[obj_id]
             status = objects_status[obj_id]
             sprite.update_status(status)
             new_game_objects[obj_id] = sprite
+        self.info('updated {count} objs', count=len(to_update))
 
         self.game_objects = new_game_objects
 

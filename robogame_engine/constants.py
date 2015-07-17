@@ -18,3 +18,28 @@ ROTATE_FLIP_BOTH = 'FLIP_BOTH'
 ROTATE_NO_TURN = 'NO_TURN'
 
 BACKGROUND_COLOR = (128, 128, 128)
+
+LOGGING = {
+    'version': 1,
+    # 'disable_existing_loggers': False,
+    'formatters': {
+        'console': {
+            'format': "[%(levelname)s]: %(message)s",
+            'datefmt': "%Y-%m-%d %I:%M:%S"
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
+        },
+    },
+    'loggers': {
+        'robogame': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    }
+}
+LOGLEVEL = 'WARNING'

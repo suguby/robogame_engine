@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import logging
+import logging.config
 from multiprocessing import Pipe, Process
 from random import randint
 import time
@@ -9,10 +11,10 @@ from robogame_engine.geometry import Vector, Point
 from robogame_engine.objects import ObjectStatus, GameObject
 from robogame_engine.theme import theme
 from robogame_engine.user_interface import UserInterface
-from robogame_engine.utils import logger
+from robogame_engine.utils import CanLogging
 
 
-class Scene:
+class Scene(CanLogging):
     """
         Game scene. Container for all game objects.
     """
@@ -36,8 +38,6 @@ class Scene:
         self.ui = None
         self._step = 0
         self._checked_ids = []
-        if theme.DEBUG:
-            logger.setLevel('DEBUG')
         self.prepare(**kwargs)
 
     def get_max_speed(self, speed):
@@ -64,7 +64,7 @@ class Scene:
         try:
             self.objects.remove(obj)
         except IndexError:
-            logger.warning("Try to remove unexists obj {}".format(obj))
+            self.logger.warning("Try to remove unexists obj {}".format(obj))
 
     def get_objects_by_type(self, cls):
         return [obj for obj in self.objects if isinstance(obj, cls)]

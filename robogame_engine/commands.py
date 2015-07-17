@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from robogame_engine.geometry import Point, Vector
+from robogame_engine.utils import CanLogging
 
 
-class Command(object):
+class Command(CanLogging):
     """
         Command to GameObjects
     """

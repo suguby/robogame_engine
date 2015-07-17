@@ -7,13 +7,13 @@ from collections import defaultdict
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
 from robogame_engine.constants import ROTATE_NO_TURN
 from robogame_engine.theme import theme
+from robogame_engine.utils import CanLogging
 from .states import StateStopped, StateMoving
-from .utils import logger
 from .events import (EventHearbeat, EventStopped, EventBorned)
 from .geometry import Point
 
 
-class GameObject(object):
+class GameObject(CanLogging):
     """
         Main game object
     """
@@ -172,21 +172,6 @@ class GameObject(object):
         if radius is None:
             radius = theme.NEAR_RADIUS
         return self.distance_to(obj) <= radius
-
-    def debug(self, pattern, **kwargs):
-        """
-            Show debug information if DEBUG mode
-        """
-        self._log(logger.debug, pattern, kwargs)
-
-    def info(self, pattern, **kwargs):
-        self._log(logger.info, pattern, kwargs)
-
-    def _log(self, log_fun, pattern, kwargs):
-        kwargs['cls'] = self.__class__.__name__
-        kwargs.update(self.__dict__)
-        pattern = '{cls}:{id}:' + pattern
-        log_fun(pattern.format(**kwargs))
 
     def __str__(self):
         return 'obj({id}, {coord} cour={course:1f})'.format(**self.__dict__)
