@@ -459,7 +459,7 @@ class Fps(DirtySprite):
         self.fps.append(current_fps)
         if self.show:
             fps = sum(self.fps) / len(self.fps)
-            msg = '%5.0f FPS' % fps
+            msg = '{:5.0f} FPS'.format(fps)
         else:
             msg = ''
         self.image = self.font.render(msg, 1, self.color)

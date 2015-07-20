@@ -162,8 +162,8 @@ class GameObject(CanLogging):
             return self.coord.distance_to(obj.coord)
         if isinstance(obj, Point):
             return self.coord.distance_to(obj)
-        raise Exception("GameObject.distance_to: obj %s "
-                        "must be GameObject or Point!" % (obj,))
+        raise Exception("GameObject.distance_to: obj {} "
+                        "must be GameObject or Point!".format(obj,))
 
     def near(self, obj, radius=None):
         """

@@ -122,7 +122,7 @@ class Point(object):
         return False
 
     def __str__(self):
-        return 'p(%.1f,%.1f)' % (self.x, self.y)
+        return 'p({:.1f},{:.1f})'.format(self.x, self.y)
 
     def __repr__(self):
         return str(self)
@@ -217,8 +217,7 @@ class Vector(object):
         self.angle = normalise_angle(a)
 
     def __str__(self):
-        return 'v(dx=%.2f dy=%.2f a=%.2f m=%.2f)' \
-                % (self.dx, self.dy, self.angle, self.module)
+        return 'v(dx={:.2f} dy={:.2f} a={:.2f} m={:.2f})'.format(self.dx, self.dy, self.angle, self.module)
 
     def __repr__(self):
         return str(self)

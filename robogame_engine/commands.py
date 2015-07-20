@@ -24,7 +24,7 @@ class MoveCommand(Command):
         if isinstance(target, Point) or isinstance(target, GameObject):
             self.target = target
         else:
-            raise Exception("Target %s must Point or GameObject!" % target)
+            raise Exception("Target {} must Point or GameObject!".format(target))
         self.speed = speed
 
     def execute(self):
@@ -47,7 +47,7 @@ class TurnCommand(Command):
             self.vector = Vector(direction, 0)
         else:
             raise Exception("use GameObject.turn_to(GameObject/Point "
-                            "or Angle). Your pass %s" % target)
+                            "or Angle). Your pass {}".format(target))
 
     def execute(self):
         self.obj.state.turn(vector=self.vector, target=self.target)
