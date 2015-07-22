@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from robogame_engine.theme import theme
 from robogame_engine.geometry import Point, Vector
 from robogame_engine.utils import CanLogging
 
@@ -21,8 +22,10 @@ class MoveCommand(Command):
     def __init__(self, obj, target, speed, **kwargs):
         super(MoveCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
-        if isinstance(target, Point) or isinstance(target, GameObject):
+        if isinstance(target, Point):
             self.target = target
+        elif isinstance(target, GameObject):
+            self.target = target.coord
         else:
             raise Exception("Target {} must Point or GameObject!".format(target))
         self.speed = speed
@@ -38,13 +41,13 @@ class TurnCommand(Command):
         from .objects import GameObject
         self.target = None
         if isinstance(target, GameObject):
-            self.vector = Vector(self.obj, target.coord, 0)
+            self.vector = Vector.from_points(self.obj, target.coord)
             self.target = target
         elif isinstance(target, Point):
-            self.vector = Vector(self.obj, target, 0)
+            self.vector = Vector.from_points(self.obj, target)
         elif isinstance(target, int) or isinstance(target, float):
             direction = target
-            self.vector = Vector(direction, 0)
+            self.vector = Vector.from_direction(direction, theme.MAX_SPEED)
         else:
             raise Exception("use GameObject.turn_to(GameObject/Point "
                             "or Angle). Your pass {}".format(target))

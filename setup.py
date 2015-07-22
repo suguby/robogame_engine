@@ -10,7 +10,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='robogame_engine',
-    version='0.2',
+    version='0.3',
     packages=['robogame_engine'],
     include_package_data=True,
     license='BSD License',
@@ -26,6 +26,5 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     install_requires=[
-        'euclid==0.01',
     ]
 )

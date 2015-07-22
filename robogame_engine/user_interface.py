@@ -129,21 +129,21 @@ class RoboSprite(DirtySprite, CanLogging):
             if rotate_mode == ROTATE_TURNING:
                 self.image = self._rotate_about_center()
             elif rotate_mode == ROTATE_FLIP_VERTICAL:
-                if 90 <= self.status.course <= 270:
+                if 90 <= self.status.direction <= 270:
                     self.image = self.images[1].copy()
                 else:
                     self.image = self.images[0].copy()
             elif rotate_mode == ROTATE_FLIP_HORIZONTAL:
-                if self.status.course > 180:
+                if self.status.direction > 180:
                     self.image = self.images[2].copy()
                 else:
                     self.image = self.images[0].copy()
             elif rotate_mode == ROTATE_FLIP_BOTH:
-                if 90 <= self.status.course <= 180:
+                if 90 <= self.status.direction <= 180:
                     self.image = self.images[1].copy()
-                elif 180 < self.status.course <= 270:
+                elif 180 < self.status.direction <= 270:
                     self.image = self.images[2].copy()
-                elif 270 < self.status.course < 360:
+                elif 270 < self.status.direction < 360:
                     self.image = self.images[3].copy()
                 else:
                     self.image = self.images[0].copy()
@@ -168,7 +168,7 @@ class RoboSprite(DirtySprite, CanLogging):
         """
         image = self.images[0]
         image_name = self.status.sprite_filename
-        angle = int(self.status.course)
+        angle = int(self.status.direction)
         try:
             return self.__images_cash[image_name][angle].copy()
         except KeyError:
@@ -380,8 +380,8 @@ class UserInterface(CanLogging):
         from math import pi, cos, sin
 
         angle = theme.tank_radar_angle
-        angle_r = (obj.status.course - angle // 2) / 180.0 * pi
-        angle_l = (obj.status.course + angle // 2) / 180.0 * pi
+        angle_r = (obj.status.direction - angle // 2) / 180.0 * pi
+        angle_l = (obj.status.direction + angle // 2) / 180.0 * pi
         radar_range = theme.tank_radar_range
         points = [
             Point(obj.status.x + cos(angle_r) * radar_range,

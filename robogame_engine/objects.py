@@ -3,6 +3,7 @@
 
 from Queue import Queue
 from collections import defaultdict
+from robogame_engine.geometry import Vector
 
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
 from robogame_engine.constants import ROTATE_NO_TURN
@@ -43,8 +44,11 @@ class GameObject(CanLogging):
         self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
-        self.coord = Point(pos) if pos else Point(0, 0)
-        self.course = direction  # TODO везде изменить на direction надо наверно...
+        self.coord = pos if pos else Point(0, 0)
+        if direction:
+            self.vector = Vector.from_direction(direction, module=1)
+        else:
+            self.vector = Vector.from_points(self.coord, self.coord)
         self.target = None
         self.state = StateStopped(obj=self)
 
@@ -53,7 +57,11 @@ class GameObject(CanLogging):
         self._commands = Queue()
         self._selected = False
         self.add_event(EventBorned(self))
-        self.debug('born {coord} {course}')
+        self.debug('born {coord} {vector}')
+
+    @property
+    def direction(self):
+        return self.vector.direction
 
     @property
     def sprite_filename(self):
@@ -112,7 +120,7 @@ class GameObject(CanLogging):
         """
             Proceed one game step - do turns, movements and boundary check
         """
-        self.debug('step {coord} {course} {state}')
+        self.debug('step {coord} {vector} {state}')
         self.state.step()
         self._check_runout()
         self._heartbeat()
@@ -174,7 +182,7 @@ class GameObject(CanLogging):
         return self.distance_to(obj) <= radius
 
     def __str__(self):
-        return 'obj({id}, {coord} cour={course:1f})'.format(**self.__dict__)
+        return 'obj({id}, {coord} {vector})'.format(**self.__dict__)
 
     def __repr__(self):
         return str(self)

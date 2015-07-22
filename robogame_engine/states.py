@@ -7,14 +7,21 @@ from robogame_engine.utils import CanLogging
 
 class ObjectState(CanLogging):
 
-    def __init__(self, obj, **kwargs):
+    def __init__(self, obj, target=None, speed=None, **kwargs):
         self.obj = obj
         self.kwargs = kwargs
-        self.vector = None
-        self.target = None
+        self.target = target
+        self.speed = theme.MAX_SPEED if speed is None else speed
+        if self.target:
+            self.vector = Vector.from_points(self.obj.coord, self.target, module=self.speed)
+        else:
+            self.vector = None
 
     def move(self, target, speed):
-        self.obj.state = StateMoving(obj=self.obj, target=target, speed=speed)
+        if self.obj.rotate_mode == theme.ROTATE_TURNING:
+            self.obj.state = StateTurnToMoving(obj=self.obj, target=target, speed=speed)
+        else:
+            self.obj.state = StateMoving(obj=self.obj, target=target, speed=speed)
 
     def stop(self):
         self.obj.state = StateStopped(obj=self.obj)
@@ -31,41 +38,38 @@ class ObjectState(CanLogging):
 
 class StateTurning(ObjectState):
 
-    def turn(self, vector, target):
-        self.vector = vector
-        self.target = target
+    def step(self):
+        obj = self.obj
+        delta = self.vector.direction - obj.direction
+        if abs(delta) < theme.TURN_SPEED:
+            obj.state = StateStopped(obj=obj)
+        else:
+            if -180 < delta < 0 or delta > 180:
+                obj.vector.rotate(-theme.TURN_SPEED)
+            else:
+                obj.vector.rotate(theme.TURN_SPEED)
+
+
+class StateTurnToMoving(ObjectState):
 
     def step(self):
         obj = self.obj
-        delta = self.vector.angle - obj.course
+        delta = self.vector.direction - obj.direction
         if abs(delta) < theme.TURN_SPEED:
-            obj.course = obj.vector.angle
-            if self.target:
-                obj.state = StateMoving(obj=obj, target=self.target, speed=10)  # TODO понять откуда брать скорость
-            else:
-                obj.state = StateStopped(obj=obj)
+            obj.vector = self.vector
+            obj.state = StateMoving(obj=obj, target=self.target, speed=self.speed)
         else:
             if -180 < delta < 0 or delta > 180:
-                obj.course -= theme.TURN_SPEED
+                obj.vector.rotate(-theme.TURN_SPEED)
             else:
-                obj.course += theme.TURN_SPEED
-            obj.course = normalise_angle(obj.course)
+                obj.vector.rotate(theme.TURN_SPEED)
 
 
 class StateMoving(ObjectState):
 
-    def __init__(self, obj, target, speed, **kwargs):
-        super(StateMoving, self).__init__(obj, **kwargs)
-        self.target = target
-        self.vector = Vector(self.obj.coord, self.target, speed)
-
-    def move(self, target, speed):
-        self.target = target
-        self.vector = Vector(self.obj.coord, self.target, speed)
-
     def step(self):
-        self.obj.coord.add(self.vector)
-        self.obj.course = self.vector.angle
+        self.obj.coord += self.vector
+        self.obj.vector = self.vector
         if self.obj.coord.near(self.target):
             self.obj.state = StateStopped(obj=self.obj)
             event = EventStoppedAtTargetPoint(self.target)

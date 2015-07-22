@@ -91,10 +91,10 @@ class Scene(CanLogging):
             overlap_distance = int(left.radius + right.radius - distance)
             if overlap_distance > 1:
                 # may intersect by one pixel
-                step_back_vector = Vector(right, left, overlap_distance // 2)
+                step_back_vector = Vector.from_points(right.coord, left.coord, module=overlap_distance // 2)
                 left.debug('step_back_vector {}'.format(step_back_vector))
-                left.coord.add(step_back_vector)
-                right.coord.add(-step_back_vector)
+                left.coord += step_back_vector
+                right.coord -= step_back_vector
                 left.add_event(EventCollide(right))
                 right.add_event(EventCollide(left))
 
