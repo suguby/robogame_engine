@@ -27,6 +27,9 @@ class Point(object):
         """
             The distance to other points
         """
+        from robogame_engine import GameObject
+        if isinstance(other, GameObject):
+            other = other.coord
         assert isinstance(other, Point)
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
@@ -34,6 +37,9 @@ class Point(object):
         """
             other closer than the radius
         """
+        from robogame_engine import GameObject
+        if isinstance(other, GameObject):
+            other = other.coord
         assert isinstance(other, Point)
         return self.distance_to(other) < radius
 
@@ -44,11 +50,13 @@ class Point(object):
         return int(self.x), theme.FIELD_HEIGHT - int(self.y)
 
     def __add__(self, vector):
+        assert isinstance(vector, Vector)
         return Point(self.x + vector.x, self.y + vector.y)
 
     __radd__ = __add__
 
     def __sub__(self, vector):
+        assert isinstance(vector, Vector)
         return Point(self.x - vector.x, self.y - vector.y)
 
     __rsub__ = __sub__

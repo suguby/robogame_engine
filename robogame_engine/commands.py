@@ -22,10 +22,8 @@ class MoveCommand(Command):
     def __init__(self, obj, target, speed, **kwargs):
         super(MoveCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
-        if isinstance(target, Point):
+        if isinstance(target, Point) or isinstance(target, GameObject):
             self.target = target
-        elif isinstance(target, GameObject):
-            self.target = target.coord
         else:
             raise Exception("Target {} must Point or GameObject!".format(target))
         self.speed = speed

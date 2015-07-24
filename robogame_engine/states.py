@@ -12,8 +12,9 @@ class ObjectState(CanLogging):
         self.kwargs = kwargs
         self.target = target
         self.speed = theme.MAX_SPEED if speed is None else speed
+        target_coord = target.coord if hasattr(target, 'coord') else target
         if self.target:
-            self.vector = Vector.from_points(self.obj.coord, self.target, module=self.speed)
+            self.vector = Vector.from_points(self.obj.coord, target_coord, module=self.speed)
         else:
             self.vector = None
 
@@ -42,6 +43,7 @@ class StateTurning(ObjectState):
         obj = self.obj
         delta = self.vector.direction - obj.direction
         if abs(delta) < theme.TURN_SPEED:
+            obj.vector = self.vector
             obj.state = StateStopped(obj=obj)
         else:
             if -180 < delta < 0 or delta > 180:
