@@ -63,7 +63,7 @@ class Scene(CanLogging):
     def remove_object(self, obj):
         try:
             self.objects.remove(obj)
-        except IndexError:
+        except ValueError:
             self.logger.warning("Try to remove unexists obj {}".format(obj))
 
     def get_objects_by_type(self, cls):
@@ -91,7 +91,12 @@ class Scene(CanLogging):
             overlap_distance = int(left.radius + right.radius - distance)
             if overlap_distance > 1:
                 # may intersect by one pixel
-                step_back_vector = Vector.from_points(right.coord, left.coord, module=overlap_distance // 2)
+                module = overlap_distance // 2
+                if right.coord == left.coord:
+                    # borned at one place
+                    step_back_vector = Vector.from_direction(direction=randint(0, 360), module=module)
+                else:
+                    step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
                 left.debug('step_back_vector {}'.format(step_back_vector))
                 left.coord += step_back_vector
                 right.coord -= step_back_vector
