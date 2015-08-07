@@ -82,9 +82,15 @@ class RoboSprite(DirtySprite, CanLogging):
 
     def _show_meters(self):
         if hasattr(self.status, 'meter_1') and self.status.meter_1 > 0:
+            if self.status.meter_1 > 1:
+                self.warning("meter_1 {meter} must be expressed as a decimal", meter=self.status.meter_1)
+                self.status.meter_1 = 1
             bar_px = int(self.status.meter_1 * self.rect.width)
             line(self.image, theme.METER_1_COLOR, (0, 3), (bar_px, 3), 2)
         if hasattr(self.status, 'meter_2') and self.status.meter_2 > 0:
+            if self.status.meter_2 > 1:
+                self.warning("meter_2 {meter} must be expressed as a decimal", meter=self.status.meter_2)
+                self.status.meter_2 = 1
             bar_px = int(self.status.meter_2 * self.rect.width)
             line(self.image, theme.METER_2_COLOR, (0, 5), (bar_px, 5), 2)
         if hasattr(self.status, 'counter') and self.status.counter is not None:

@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import logging
-import logging.config
 from multiprocessing import Pipe, Process
 from random import randint
 import time
+
 from robogame_engine.events import EventCollide
 from robogame_engine.geometry import Vector, Point
-
 from robogame_engine.objects import ObjectStatus, GameObject
 from robogame_engine.theme import theme
 from robogame_engine.user_interface import UserInterface
@@ -40,7 +38,8 @@ class Scene(CanLogging):
         self._checked_ids = []
         self.prepare(**kwargs)
 
-    def get_max_speed(self, speed):
+    @staticmethod
+    def get_max_speed(speed):
         if speed is None or speed > theme.NEAR_RADIUS:
             speed = theme.NEAR_RADIUS
         return speed
