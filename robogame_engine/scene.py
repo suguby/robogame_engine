@@ -91,8 +91,7 @@ class Scene(CanLogging):
             if overlap_distance > 1:
                 # may intersect by one pixel
                 module = overlap_distance // 2
-                if right.coord == left.coord:
-                    # borned at one place
+                if right.coord.near(left.coord):
                     step_back_vector = Vector.from_direction(direction=randint(0, 360), module=module)
                 else:
                     step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
