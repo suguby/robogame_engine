@@ -20,7 +20,8 @@ class ObjectState(CanLogging):
 
     def move(self, target, speed):
         if self.obj.rotate_mode == theme.ROTATE_TURNING:
-            self.obj.state = StateTurnToMoving(obj=self.obj, target=target, speed=speed)
+            self.obj.state = StateTurning(obj=self.obj, target=target, speed=speed)
+            self.obj.state.move_at_target = True
         else:
             self.obj.state = StateMoving(obj=self.obj, target=target, speed=speed)
 
@@ -38,28 +39,17 @@ class ObjectState(CanLogging):
 
 
 class StateTurning(ObjectState):
+    move_at_target = False
 
     def step(self):
         obj = self.obj
         delta = self.vector.direction - obj.direction
         if abs(delta) < theme.TURN_SPEED:
             obj.vector = self.vector
-            obj.state = StateStopped(obj=obj)
-        else:
-            if -180 < delta < 0 or delta > 180:
-                obj.vector.rotate(-theme.TURN_SPEED)
+            if self.move_at_target:
+                obj.state = StateMoving(obj=obj, target=self.target, speed=self.speed)
             else:
-                obj.vector.rotate(theme.TURN_SPEED)
-
-
-class StateTurnToMoving(ObjectState):
-
-    def step(self):
-        obj = self.obj
-        delta = self.vector.direction - obj.direction
-        if abs(delta) < theme.TURN_SPEED:
-            obj.vector = self.vector
-            obj.state = StateMoving(obj=obj, target=self.target, speed=self.speed)
+                obj.state = StateStopped(obj=obj)
         else:
             if -180 < delta < 0 or delta > 180:
                 obj.vector.rotate(-theme.TURN_SPEED)
