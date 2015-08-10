@@ -37,15 +37,16 @@ class TurnCommand(Command):
     def __init__(self, obj, target, **kwargs):
         super(TurnCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
-        self.target = None
+        self.target = target
         if isinstance(target, GameObject):
             self.vector = Vector.from_points(self.obj, target.coord)
-            self.target = target
         elif isinstance(target, Point):
             self.vector = Vector.from_points(self.obj, target)
         elif isinstance(target, int) or isinstance(target, float):
+            # TODO убрать поддержку поворота к направлению ???
             direction = target
             self.vector = Vector.from_direction(direction, theme.MAX_SPEED)
+            self.target = obj.coord + self.vector * 100
         else:
             raise Exception("use GameObject.turn_to(GameObject/Point "
                             "or Angle). Your pass {}".format(target))

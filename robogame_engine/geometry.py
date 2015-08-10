@@ -151,6 +151,11 @@ class Vector(object):
     def __neg__(self):
         return Vector(-self.x, -self.y)
 
+    def __mul__(self, other):
+        assert isinstance(other, int)
+        return Vector(self.x * other, self.y * other)
+
+
 # def get_arctan(dy, dx):
 #     """
 #         Determine the angle in degrees for the twins

@@ -41,6 +41,12 @@ class ObjectState(CanLogging):
 class StateTurning(ObjectState):
     move_at_target = False
 
+    # def __init__(self, obj, target=None, speed=None, **kwargs):
+    #     self.error("obj={obj}, target={target}, speed={speed}, kwargs={kwargs}", obj=obj, target=target, speed=speed, kwargs=kwargs)
+    #     if target is None:
+    #         self.warning("target is None!")
+    #     super(StateTurning, self).__init__(obj, target, speed, **kwargs)
+
     def step(self):
         obj = self.obj
         delta = self.vector.direction - obj.direction
