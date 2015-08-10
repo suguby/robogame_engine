@@ -39,9 +39,9 @@ class TurnCommand(Command):
         from .objects import GameObject
         self.target = target
         if isinstance(target, GameObject):
-            self.vector = Vector.from_points(self.obj, target.coord)
+            self.vector = Vector.from_points(self.obj.coord, target.coord)
         elif isinstance(target, Point):
-            self.vector = Vector.from_points(self.obj, target)
+            self.vector = Vector.from_points(self.obj.coord, target)
         elif isinstance(target, int) or isinstance(target, float):
             # TODO убрать поддержку поворота к направлению ???
             direction = target
