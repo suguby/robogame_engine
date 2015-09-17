@@ -16,6 +16,19 @@ class Command(CanLogging):
     def execute(self):
         raise NotImplementedError()
 
+    def __str__(self):
+        return '{name} {obj} kw={kwargs}'.format(
+            name=self.__class__.__name__,
+            obj=self.obj,
+            kwargs=self.kwargs,
+        )
+
+    def __repr__(self):
+        return str(self)
+
+    def __unicode__(self):
+        return str(self)
+
 
 class MoveCommand(Command):
 
@@ -31,6 +44,8 @@ class MoveCommand(Command):
     def execute(self):
         self.obj.state.move(target=self.target, speed=self.speed, **self.kwargs)
 
+    def __str__(self):
+        return super(MoveCommand, self).__str__() + " tgt={} spd={}".format(self.target, self.speed)
 
 class TurnCommand(Command):
 
@@ -54,6 +69,8 @@ class TurnCommand(Command):
     def execute(self):
         self.obj.state.turn(vector=self.vector, target=self.target)
 
+    def __str__(self):
+        return super(MoveCommand, self).__str__() + " tgt={}".format(self.target)
 
 class StopCommand(Command):
 

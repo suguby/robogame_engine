@@ -100,6 +100,13 @@ class GameObject(CanLogging):
     def is_moving(self):
         return isinstance(self.state, StateMoving)
 
+    @classmethod
+    def is_my_status_obj(cls, obj):
+        try:
+            return obj.class_name == cls.__name__
+        except AttributeError:
+            return False
+
     def add_event(self, event):
         self._events.put(event)
 
@@ -264,6 +271,7 @@ class ObjectStatus:
         for attr_name in self.fields(obj):
             attr = getattr(obj, attr_name)
             setattr(self, attr_name, attr)
+        self.class_name = obj.__class__.__name__
 
     def fields(self, obj):
         class_name = obj.__class__.__name__
