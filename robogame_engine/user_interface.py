@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from collections import defaultdict
 
 import os
@@ -278,8 +279,8 @@ class UserInterface(CanLogging):
                         break
                 # отрисовываемся
                 self.draw()
-            except Exception, exc:
-                print exc
+            except Exception as exc:
+                print(exc)
         # очистка
         for group in self.sprites_by_layer:
             for sprite in group:
@@ -478,9 +479,9 @@ def load_image(name, colorkey=None):
     fullname = os.path.join(theme.PICTURES_PATH, name)
     try:
         image = pygame.image.load(fullname)
-    except pygame.error, message:
-        print "Cannot load image:", fullname
-        raise SystemExit(message)
+    except pygame.error as exc:
+        print("Cannot load image:", fullname)
+        raise SystemExit(exc.message)
         #image = image.convert()
     if colorkey is not None:
         if colorkey is -1:

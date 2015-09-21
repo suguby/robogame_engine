@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from multiprocessing import Pipe, Process
 from random import randint
 import time
@@ -158,7 +159,7 @@ class Scene(CanLogging):
         # ждем пока потомки помрут
         self.ui.join()
 
-        print 'Thank for playing with robogame! See you in the future :)'
+        print('Thank for playing with robogame! See you in the future :)')
 
 
 def start_ui(name, child_conn):

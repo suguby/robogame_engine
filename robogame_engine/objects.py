@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from Queue import Queue
+from queue import Queue
 from collections import defaultdict
 from robogame_engine.geometry import Vector
 
@@ -264,7 +264,7 @@ class ObjectStatus:
     """
         Hold game object state, useful for exchange between processes
     """
-    SEND_TYPES = (bool, int, float, str, unicode, dict, )
+    SEND_TYPES = (bool, int, float, str, dict, )  # unicode,
     __fields = defaultdict(list)
 
     def __init__(self, obj):
