@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from queue import Queue
 from collections import defaultdict
+from six import PY3
 from robogame_engine.geometry import Vector
 
 from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
@@ -12,6 +12,11 @@ from robogame_engine.utils import CanLogging
 from .states import StateStopped, StateMoving
 from .events import (EventHearbeat, EventStopped, EventBorned)
 from .geometry import Point
+
+if PY3:
+    from queue import Queue
+else:
+    from Queue import Queue
 
 
 class GameObject(CanLogging):

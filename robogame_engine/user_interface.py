@@ -216,8 +216,8 @@ class UserInterface(CanLogging):
         Show sprites and get feedback from user
     """
     _max_fps = 50  # ограничиваем для стабильности отклика клавы/мыши
-    sprites_by_layer = None
-    sprites_all = None
+    sprites_by_layer = []
+    sprites_all = []
 
     def __init__(self, name, current_theme):
         """
@@ -280,7 +280,7 @@ class UserInterface(CanLogging):
                 # отрисовываемся
                 self.draw()
             except Exception as exc:
-                print(exc)
+                print('UI: {}'.format(exc))
         # очистка
         for group in self.sprites_by_layer:
             for sprite in group:
@@ -481,7 +481,7 @@ def load_image(name, colorkey=None):
         image = pygame.image.load(fullname)
     except pygame.error as exc:
         print("Cannot load image:", fullname)
-        raise SystemExit(exc.message)
+        raise SystemExit(exc)
         #image = image.convert()
     if colorkey is not None:
         if colorkey is -1:
