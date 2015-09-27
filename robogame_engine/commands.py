@@ -47,6 +47,7 @@ class MoveCommand(Command):
     def __str__(self):
         return super(MoveCommand, self).__str__() + " tgt={} spd={}".format(self.target, self.speed)
 
+
 class TurnCommand(Command):
 
     def __init__(self, obj, target, **kwargs):
@@ -70,7 +71,8 @@ class TurnCommand(Command):
         self.obj.state.turn(vector=self.vector, target=self.target)
 
     def __str__(self):
-        return super(MoveCommand, self).__str__() + " tgt={}".format(self.target)
+        return super(TurnCommand, self).__str__() + " tgt={}".format(self.target)
+
 
 class StopCommand(Command):
 
