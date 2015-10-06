@@ -57,7 +57,7 @@ class Scene(CanLogging):
             return team
 
     def prepare(self, **kwargs):
-        raise NotImplementedError()
+        pass
 
     def remove_object(self, obj):
         try:
