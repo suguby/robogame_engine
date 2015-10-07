@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from multiprocessing import Pipe, Process
 from random import randint
 import time
 
-from robogame_engine.events import EventCollide
-from robogame_engine.geometry import Vector, Point
-from robogame_engine.objects import ObjectStatus, GameObject
-from robogame_engine.theme import theme
-from robogame_engine.user_interface import UserInterface
-from robogame_engine.utils import CanLogging
+from .events import EventCollide
+from .geometry import Vector, Point
+from .objects import ObjectStatus, GameObject
+from .theme import theme
+from .user_interface import UserInterface
+from .utils import CanLogging
 
 
 class Scene(CanLogging):

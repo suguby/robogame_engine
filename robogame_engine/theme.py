@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+
 from importlib import import_module
-from robogame_engine import constants
+
+import constants
 
 
 class Theme(object):

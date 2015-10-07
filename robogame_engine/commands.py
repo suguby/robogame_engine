@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from robogame_engine.theme import theme
-from robogame_engine.geometry import Point, Vector
-from robogame_engine.utils import CanLogging
+
+from .theme import theme
+from .geometry import Point, Vector
+from .utils import CanLogging
 
 
 class Command(CanLogging):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from robogame_engine.utils import CanLogging
+
+from .utils import CanLogging
 
 
 class GameEvent(CanLogging):

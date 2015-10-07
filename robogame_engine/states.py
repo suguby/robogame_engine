@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from robogame_engine.theme import theme
-from robogame_engine.events import EventStoppedAtTargetPoint
-from robogame_engine.geometry import normalise_angle, Vector
-from robogame_engine.utils import CanLogging
+
+from .theme import theme
+from .events import EventStoppedAtTargetPoint
+from .geometry import Vector
+from .utils import CanLogging
 
 
 class ObjectState(CanLogging):

@@ -3,12 +3,12 @@
 
 from Queue import Queue
 from collections import defaultdict
-from robogame_engine.geometry import Vector
+from .geometry import Vector
 
-from robogame_engine.commands import TurnCommand, MoveCommand, StopCommand
-from robogame_engine.constants import ROTATE_NO_TURN
-from robogame_engine.theme import theme
-from robogame_engine.utils import CanLogging
+from .commands import TurnCommand, MoveCommand, StopCommand
+from .constants import ROTATE_NO_TURN
+from .theme import theme
+from .utils import CanLogging
 from .states import StateStopped, StateMoving
 from .events import (EventHearbeat, EventStopped, EventBorned)
 from .geometry import Point

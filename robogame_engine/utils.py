@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import logging
 import logging.config
-from robogame_engine.theme import theme
+
+from .theme import theme
 
 
 def _collide_circle(left, right):

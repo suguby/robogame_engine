@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from collections import defaultdict
 
+from collections import defaultdict
 import os
 import random
 import pygame
@@ -13,9 +13,9 @@ from pygame.transform import flip
 from pygame.draw import line, circle, rect, aalines
 from pygame.display import set_caption, set_mode
 from pygame.time import Clock
-from robogame_engine.constants import (ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL,
-                                       ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH)
 
+from .constants import (ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL,
+                                       ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH)
 from robogame_engine.geometry import Point
 from robogame_engine.utils import CanLogging
 

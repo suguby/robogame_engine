@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import math
 
-from robogame_engine.theme import theme
+from .theme import theme
 
 
 def normalise_angle(a):
