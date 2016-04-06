@@ -45,4 +45,4 @@ LOGGING = {
 }
 LOGLEVEL = 'WARNING'
 
-FONT_FILE_NAME = os.path.join(os.path.dirname(__file__), 'fonts', 'terminus-ttf-4.39', 'TerminusTTF-Bold-4.39.ttf')
+FONT_FILE_NAME = os.path.join(os.path.dirname(__file__), 'fonts', 'TerminusTTF-Bold-4.39.ttf')

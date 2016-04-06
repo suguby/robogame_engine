@@ -10,8 +10,8 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='robogame_engine',
-    version='0.5',
-    packages=['robogame_engine'],
+    version='0.6',
+    packages=['robogame_engine', 'robogame_engine.fonts'],
     include_package_data=True,
     license='BSD License',
     description='The package allows you to create RoboGames.',
