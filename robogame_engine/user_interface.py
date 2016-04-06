@@ -53,7 +53,7 @@ class RoboSprite(DirtySprite, CanLogging):
             random.randint(50, 255),
             0
         )
-        self._id_font = Font(None, 27)
+        self._id_font = Font(theme.FONT_FILE_NAME, 20)
         self._selected = False
         # for animated sprites
         self._animcycle = 3
@@ -71,7 +71,7 @@ class RoboSprite(DirtySprite, CanLogging):
     @property
     def font(self):
         if not hasattr(self, '_font'):
-            self._font = pygame.font.Font(None, self.counter_attrs['size'])
+            self._font = pygame.font.Font(theme.FONT_FILE_NAME, self.counter_attrs['size'])
         return self._font
 
     @property
@@ -449,7 +449,7 @@ class Fps(DirtySprite):
             """
         super(Fps, self).__init__(UserInterface.sprites_by_layer[0])
         self.show = False
-        self.font = pygame.font.Font(None, 27)
+        self.font = pygame.font.Font(theme.FONT_FILE_NAME, 20)
         self.color = color
         self.image = self.font.render('-', 0, self.color)
         self.rect = self.image.get_rect()
