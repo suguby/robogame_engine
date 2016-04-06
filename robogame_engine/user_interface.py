@@ -19,8 +19,7 @@ from robogame_engine.constants import (ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FL
 
 from robogame_engine.geometry import Point
 from robogame_engine.utils import CanLogging
-
-theme = None  # global constants source, inited in UI.__init__
+from robogame_engine.theme import theme
 
 
 class RoboSprite(DirtySprite, CanLogging):
@@ -223,8 +222,7 @@ class UserInterface(CanLogging):
         """
             Make game window
         """
-        global theme
-        theme = current_theme
+        theme.set_theme_module(current_theme)
 
         UserInterface.sprites_all = pygame.sprite.LayeredUpdates()
         UserInterface.sprites_by_layer = [pygame.sprite.LayeredUpdates(layer=i) for i in range(theme.MAX_LAYERS + 1)]

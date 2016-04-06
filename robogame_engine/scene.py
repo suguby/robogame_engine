@@ -113,7 +113,7 @@ class Scene(CanLogging):
             Main game cycle - the game begin!
         """
         self.parent_conn, child_conn = Pipe()
-        self.ui = Process(target=start_ui, args=(self.name, child_conn,))
+        self.ui = Process(target=start_ui, args=(self.name, child_conn, theme.mod_path))
         self.ui.start()
 
         while True:
@@ -162,8 +162,8 @@ class Scene(CanLogging):
         print('Thank for playing with robogame! See you in the future :)')
 
 
-def start_ui(name, child_conn):
-    ui = UserInterface(name, theme)
+def start_ui(name, child_conn, theme_mod_path):
+    ui = UserInterface(name, theme_mod_path)
     ui.run(child_conn)
 
 
