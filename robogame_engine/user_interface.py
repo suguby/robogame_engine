@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 
 from collections import defaultdict
 import os
@@ -18,8 +19,7 @@ from .constants import (ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL,
                                        ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH)
 from robogame_engine.geometry import Point
 from robogame_engine.utils import CanLogging
-
-theme = None  # global constants source, inited in UI.__init__
+from robogame_engine.theme import theme
 
 
 class RoboSprite(DirtySprite, CanLogging):
@@ -52,7 +52,7 @@ class RoboSprite(DirtySprite, CanLogging):
             random.randint(50, 255),
             0
         )
-        self._id_font = Font(None, 27)
+        self._id_font = Font(theme.FONT_FILE_NAME, 20)
         self._selected = False
         # for animated sprites
         self._animcycle = 3
@@ -70,7 +70,7 @@ class RoboSprite(DirtySprite, CanLogging):
     @property
     def font(self):
         if not hasattr(self, '_font'):
-            self._font = pygame.font.Font(None, self.counter_attrs['size'])
+            self._font = pygame.font.Font(theme.FONT_FILE_NAME, self.counter_attrs['size'])
         return self._font
 
     @property
@@ -215,15 +215,14 @@ class UserInterface(CanLogging):
         Show sprites and get feedback from user
     """
     _max_fps = 50  # ограничиваем для стабильности отклика клавы/мыши
-    sprites_by_layer = None
-    sprites_all = None
+    sprites_by_layer = []
+    sprites_all = []
 
     def __init__(self, name, current_theme):
         """
             Make game window
         """
-        global theme
-        theme = current_theme
+        theme.set_theme_module(current_theme)
 
         UserInterface.sprites_all = pygame.sprite.LayeredUpdates()
         UserInterface.sprites_by_layer = [pygame.sprite.LayeredUpdates(layer=i) for i in range(theme.MAX_LAYERS + 1)]
@@ -278,8 +277,8 @@ class UserInterface(CanLogging):
                         break
                 # отрисовываемся
                 self.draw()
-            except Exception, exc:
-                print exc
+            except Exception as exc:
+                print('UI: {}'.format(exc))
         # очистка
         for group in self.sprites_by_layer:
             for sprite in group:
@@ -448,7 +447,7 @@ class Fps(DirtySprite):
             """
         super(Fps, self).__init__(UserInterface.sprites_by_layer[0])
         self.show = False
-        self.font = pygame.font.Font(None, 27)
+        self.font = pygame.font.Font(theme.FONT_FILE_NAME, 20)
         self.color = color
         self.image = self.font.render('-', 0, self.color)
         self.rect = self.image.get_rect()
@@ -478,9 +477,9 @@ def load_image(name, colorkey=None):
     fullname = os.path.join(theme.PICTURES_PATH, name)
     try:
         image = pygame.image.load(fullname)
-    except pygame.error, message:
-        print "Cannot load image:", fullname
-        raise SystemExit(message)
+    except pygame.error as exc:
+        print("Cannot load image:", fullname)
+        raise SystemExit(exc)
         #image = image.convert()
     if colorkey is not None:
         if colorkey is -1:

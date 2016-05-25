@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from Queue import Queue
 from collections import defaultdict
-from .geometry import Vector
+from six import PY3
+from robogame_engine.geometry import Vector
 
 from .commands import TurnCommand, MoveCommand, StopCommand
 from .constants import ROTATE_NO_TURN
@@ -12,6 +12,11 @@ from .utils import CanLogging
 from .states import StateStopped, StateMoving
 from .events import (EventHearbeat, EventStopped, EventBorned)
 from .geometry import Point
+
+if PY3:
+    from queue import Queue
+else:
+    from Queue import Queue
 
 
 class GameObject(CanLogging):
@@ -267,7 +272,7 @@ class ObjectStatus:
     """
         Hold game object state, useful for exchange between processes
     """
-    SEND_TYPES = (bool, int, float, str, unicode, dict, )
+    SEND_TYPES = (bool, int, float, str, dict, )  # unicode,
     __fields = defaultdict(list)
 
     def __init__(self, obj):

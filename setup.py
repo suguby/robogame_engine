@@ -1,6 +1,6 @@
 import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
@@ -10,7 +10,11 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='robogame_engine',
+<<<<<<< HEAD
     version='0.5.1',
+=======
+    version='0.7.4',
+>>>>>>> b5ad80df429ce8d3260f54abe981de734b394458
     packages=['robogame_engine'],
     include_package_data=True,
     license='BSD License',
@@ -26,5 +30,6 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     install_requires=[
+        'six==1.10.0'
     ]
 )
