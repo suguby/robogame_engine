@@ -18,6 +18,12 @@ class GameEvent(CanLogging):
     def handle(self, obj):
         raise NotImplementedError()
 
+    def __str__(self):
+        return self.__class__.__name__
+
+    def __unicode__(self):
+        return str(self)
+
 
 class EventBorned(GameEvent):
 

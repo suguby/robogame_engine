@@ -116,7 +116,10 @@ class GameObject(CanLogging):
     def proceed_events(self):
         while not self._events.empty():
             event = self._events.get()
-            event.handle(obj=self)
+            try:
+                event.handle(obj=self)
+            except Exception as exc:
+                self.error("Exception at {} event {} handle: {}".format(self, event, exc))
 
     def proceed_commands(self):
         while not self._commands.empty():
