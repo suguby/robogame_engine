@@ -218,12 +218,12 @@ class GameObject(CanLogging):
         command = TurnCommand(obj=self, target=target)
         self.add_command(command)
 
-    def move_at(self, target, speed=3):
+    def move_at(self, target, speed=None):
         """
             Set movement to the specified obj/point
             <object/point/coordinats>, <speed>
         """
-        if speed > self.__max_speed:
+        if speed is None or speed > self.__max_speed:
             speed = self.__max_speed
         command = MoveCommand(obj=self, target=target, speed=speed)
         self.add_command(command)
