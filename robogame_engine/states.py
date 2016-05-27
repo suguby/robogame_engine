@@ -67,12 +67,15 @@ class StateTurning(ObjectState):
 class StateMoving(ObjectState):
 
     def step(self):
-        self.obj.coord += self.vector
-        self.obj.vector = self.vector
-        if self.obj.coord.near(self.target):
+        distance_to_target = self.obj.coord.distance_to(self.target)
+        if distance_to_target < self.vector.module:
+            self.obj.coord += Vector.from_direction(self.vector.direction, distance_to_target)
             self.obj.state = StateStopped(obj=self.obj)
             event = EventStoppedAtTargetPoint(self.target)
             self.obj.add_event(event)
+        else:
+            self.obj.coord += self.vector
+            self.obj.vector = self.vector
 
 
 class StateStopped(ObjectState):
