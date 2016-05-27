@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from importlib import import_module
-
-import constants
+from . import constants
 
 
 class Theme(object):
@@ -29,6 +28,6 @@ class Theme(object):
                             item, self.mod_path
                         ))
             self.__dict__[item] = value
-        return self.__dict__[item]  # todo через setattr
+        return self.__dict__[item]
 
 theme = Theme()
