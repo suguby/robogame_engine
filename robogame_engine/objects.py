@@ -188,13 +188,12 @@ class GameObject(CanLogging):
         raise Exception("GameObject.distance_to: obj {} "
                         "must be GameObject or Point!".format(obj,))
 
-    def near(self, obj, radius=None):
+    def near(self, obj):
         """
-            Is it near to the <object/point>?
+            Is it near to the object?
         """
-        if radius is None:
-            radius = theme.NEAR_RADIUS
-        return self.distance_to(obj) <= radius
+        assert isinstance(obj, GameObject)
+        return self.distance_to(obj) <= self.radius + obj.radius
 
     def __str__(self):
         return 'obj({id}, {coord} {vector})'.format(**self.__dict__)
@@ -204,10 +203,6 @@ class GameObject(CanLogging):
 
     def __unicode__(self):
         return str(self)
-
-    # def _need_turning(self):
-    # return self.revolvable and int(self.course) != int(self.vector.angle)
-    #
 
     ############# Manage ###############
 

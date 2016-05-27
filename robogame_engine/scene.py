@@ -23,7 +23,7 @@ class Scene(CanLogging):
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=None, **kwargs):
         theme.set_theme_module(mod_path=theme_mod_path)
         self.objects = []
-        self._max_speed = self.get_max_speed(speed)
+        self._max_speed = speed
         GameObject.link_to_scene(
             scene=self,
             container=self.objects,
@@ -38,12 +38,6 @@ class Scene(CanLogging):
         self._step = 0
         self._checked_ids = []
         self.prepare(**kwargs)
-
-    @staticmethod
-    def get_max_speed(speed):
-        if speed is None or speed > theme.NEAR_RADIUS:
-            speed = theme.NEAR_RADIUS
-        return speed
 
     def get_team(self, cls):
         try:
@@ -92,10 +86,7 @@ class Scene(CanLogging):
             if overlap_distance > 1:
                 # may intersect by one pixel
                 module = overlap_distance // 2
-                if right.coord.near(left.coord):
-                    step_back_vector = Vector.from_direction(direction=randint(0, 360), module=module)
-                else:
-                    step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
+                step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
                 left.debug('step_back_vector {}'.format(step_back_vector))
                 left.coord += step_back_vector
                 right.coord -= step_back_vector

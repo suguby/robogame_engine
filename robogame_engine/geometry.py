@@ -34,18 +34,6 @@ class Point(object):
         assert isinstance(other, Point)
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
-    def near(self, other, radius=None):
-        """
-            other closer than the radius
-        """
-        from robogame_engine import GameObject
-        if isinstance(other, GameObject):
-            other = other.coord
-        assert isinstance(other, Point)
-        if radius is None:
-            radius = theme.NEAR_RADIUS
-        return self.distance_to(other) < radius
-
     def to_screen(self):
         """
             Convert coordinates to display
