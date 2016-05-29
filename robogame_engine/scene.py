@@ -20,14 +20,13 @@ class Scene(CanLogging):
     check_collisions = True
     _teams = {}
 
-    def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=None, **kwargs):
+    def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, **kwargs):
         theme.set_theme_module(mod_path=theme_mod_path)
         self.objects = []
-        self._max_speed = speed
+        self.game_speed = int(speed)
         GameObject.link_to_scene(
             scene=self,
             container=self.objects,
-            max_speed=self._max_speed,
         )
         self.hold_state = False  # режим пошаговой отладки
         self.name = name
@@ -136,16 +135,16 @@ class Scene(CanLogging):
             if not self.hold_state or (ui_state and ui_state.one_step):
                 self._step += 1
                 self.game_step()
-                # отсылаем новое состояние обьектов в UI
-                objects_status = self.get_objects_status()
-                self.parent_conn.send(objects_status)
-
-            # вычисляем остаток времени на сон
-            cycle_time = time.time() - cycle_begin
-            cycle_time_rest = theme.GAME_STEP_MIN_TIME - cycle_time
-            if cycle_time_rest > 0:
-                # о! есть время поспать... :)
-                time.sleep(cycle_time_rest)
+                if self._step % self.game_speed == 0 or (ui_state and ui_state.one_step):
+                    # отсылаем новое состояние обьектов в UI раз в self.game_speed
+                    objects_status = self.get_objects_status()
+                    self.parent_conn.send(objects_status)
+                    # вычисляем остаток времени на сон
+                    cycle_time = time.time() - cycle_begin
+                    cycle_time_rest = theme.GAME_STEP_MIN_TIME - cycle_time
+                    if cycle_time_rest > 0:
+                        # о! есть время поспать... :)
+                        time.sleep(cycle_time_rest)
 
         # ждем пока потомки помрут
         self.ui.join()

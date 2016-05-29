@@ -6,7 +6,7 @@ from six import PY3
 from robogame_engine.geometry import Vector
 
 from .commands import TurnCommand, MoveCommand, StopCommand
-from .constants import ROTATE_NO_TURN
+from .constants import ROTATE_NO_TURN, TURN_SPEED, MAX_SPEED
 from .theme import theme
 from .utils import CanLogging
 from .states import StateStopped, StateMoving
@@ -34,14 +34,11 @@ class GameObject(CanLogging):
     __objects_count = 0
     __container = None
     _scene = None
-    __max_speed = 3  # setted in scene
-    _distance_cache = {}  # not used TODO use and clean each game step
 
     @classmethod
-    def link_to_scene(cls, scene, container, max_speed):
+    def link_to_scene(cls, scene, container):
         cls._scene = scene
         cls.__container = container
-        cls.__max_speed = max_speed
 
     def __init__(self, pos=None, direction=0):
         if self._scene is None:
@@ -206,11 +203,13 @@ class GameObject(CanLogging):
 
     ############# Manage ###############
 
-    def turn_to(self, target):
+    def turn_to(self, target, speed=None):
         """
             Turn to the subject / in that direction
         """
-        command = TurnCommand(obj=self, target=target)
+        if speed is None or speed > theme.MAX_TURN_SPED:
+            speed = theme.MAX_TURN_SPED
+        command = TurnCommand(obj=self, target=target, speed=speed)
         self.add_command(command)
 
     def move_at(self, target, speed=None):
@@ -218,8 +217,8 @@ class GameObject(CanLogging):
             Set movement to the specified obj/point
             <object/point/coordinats>, <speed>
         """
-        if speed is None or speed > self.__max_speed:
-            speed = self.__max_speed
+        if speed is None or speed > theme.MAX_SPEED:
+            speed = theme.MAX_SPEED
         command = MoveCommand(obj=self, target=target, speed=speed)
         self.add_command(command)
 
