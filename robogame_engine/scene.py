@@ -80,6 +80,10 @@ class Scene(CanLogging):
         for right in self.objects:
             if (right.id == left.id) or (right.id in self._checked_ids):
                 continue
+            if hasattr(right, 'owner') and right.owner == left:
+                continue
+            if hasattr(left, 'owner') and left.owner == right:
+                continue
             distance = left.distance_to(right)
             overlap_distance = int(left.radius + right.radius - distance)
             if overlap_distance > 1:

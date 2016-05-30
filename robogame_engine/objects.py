@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
+from random import randint
+
 from six import PY3
 from robogame_engine.geometry import Vector
 
@@ -47,10 +49,9 @@ class GameObject(CanLogging):
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
         self.coord = pos if pos else Point(0, 0)
-        if direction:
-            self.vector = Vector.from_direction(direction, module=1)
-        else:
-            self.vector = Vector.from_points(self.coord, self.coord)
+        if not direction:
+            direction = randint(0, 360)
+        self.vector = Vector.from_direction(direction, module=1)
         self.target = None
         self.state = StateStopped(obj=self)
 

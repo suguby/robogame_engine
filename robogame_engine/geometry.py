@@ -145,15 +145,14 @@ class Vector(object):
         return Vector(self.x * other, self.y * other)
 
 
-# def get_arctan(dy, dx):
-#     """
-#         Determine the angle in degrees for the twins
-#     """
-#     out = math.atan2(dy, dx) / math.pi * 180
-#     # Unlike atan(y/x), the signs of both x and y are considered.
-#     return normalise_angle(out)
-#
-#
+def get_arctan(dy, dx):
+    """
+        Determine the angle in degrees for the twins
+    """
+    out = math.atan2(dy, dx) / math.pi * 180
+    # Unlike atan(y/x), the signs of both x and y are considered.
+    return normalise_angle(out)
+
 # def get_tangens(angle):
 #     """
 #         Determine the tangent of the angle in degrees
