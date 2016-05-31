@@ -35,27 +35,27 @@ class CanLogging(object):
                 self.__logger.setLevel(theme.LOGLEVEL)
         return self.__logger
 
-    def debug(self, pattern, **kwargs):
+    def debug(self, pattern, *args, **kwargs):
         if self.logger.level == logging.DEBUG:
-            self._log(self.logger.debug, pattern, kwargs)
+            self._log(self.logger.debug, pattern, args, kwargs)
 
-    def info(self, pattern, **kwargs):
+    def info(self, pattern, *args, **kwargs):
         if self.logger.level == logging.INFO:
-            self._log(self.logger.info, pattern, kwargs)
+            self._log(self.logger.info, pattern, args, kwargs)
 
-    def warning(self, pattern, **kwargs):
+    def warning(self, pattern, *args, **kwargs):
         if self.logger.level == logging.WARNING:
-            self._log(self.logger.warning, pattern, kwargs)
+            self._log(self.logger.warning, pattern, args, kwargs)
 
-    def error(self, pattern, **kwargs):
+    def error(self, pattern, *args, **kwargs):
         if self.logger.level == logging.ERROR:
-            self._log(self.logger.error, pattern, kwargs)
+            self._log(self.logger.error, pattern, args, kwargs)
 
-    def _log(self, log_fun, pattern, kwargs):
+    def _log(self, log_fun, pattern, args, kwargs):
         kwargs['cls'] = self.__class__.__name__
         kwargs.update(self.__dict__)
         if 'id' in kwargs:
             pattern = '{cls}:{id}: ' + pattern
         else:
             pattern = '{cls}: ' + pattern
-        log_fun(pattern.format(**kwargs))
+        log_fun(pattern.format(*args, **kwargs))
