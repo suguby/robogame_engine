@@ -11,11 +11,10 @@ class ObjectState(CanLogging):
     def __init__(self, obj, target=None, speed=None, **kwargs):
         self.obj = obj
         self.kwargs = kwargs
-        self.target = target
+        self.target_point = target.coord if hasattr(target, 'coord') else target
         self.speed = theme.MAX_SPEED if speed is None else speed
-        target_coord = target.coord if hasattr(target, 'coord') else target
-        if self.target:
-            self.vector = Vector.from_points(self.obj.coord, target_coord, module=self.speed)
+        if self.target_point:
+            self.vector = Vector.from_points(self.obj.coord, self.target_point, module=self.speed)
         else:
             self.vector = None
 
@@ -54,7 +53,7 @@ class StateTurning(ObjectState):
         if abs(delta) < theme.TURN_SPEED:
             obj.vector = self.vector
             if self.move_at_target:
-                obj.state = StateMoving(obj=obj, target=self.target, speed=self.speed)
+                obj.state = StateMoving(obj=obj, target=self.target_point, speed=self.speed)
             else:
                 obj.state = StateStopped(obj=obj)
         else:
@@ -67,11 +66,11 @@ class StateTurning(ObjectState):
 class StateMoving(ObjectState):
 
     def step(self):
-        distance_to_target = self.obj.coord.distance_to(self.target)
+        distance_to_target = self.obj.coord.distance_to(self.target_point)
         if distance_to_target < self.vector.module:
             self.obj.coord += Vector.from_direction(self.vector.direction, distance_to_target)
             self.obj.state = StateStopped(obj=self.obj)
-            event = EventStoppedAtTargetPoint(self.target)
+            event = EventStoppedAtTargetPoint(self.target_point)
             self.obj.add_event(event)
         else:
             self.obj.coord += self.vector
