@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import logging
+
 import os
 
 TURN_SPEED = 5
@@ -43,6 +45,6 @@ LOGGING = {
         },
     }
 }
-LOGLEVEL = 'WARNING'
+LOGLEVEL = logging.WARNING
 
 FONT_FILE_NAME = os.path.join(os.path.dirname(__file__), 'fonts', 'TerminusTTF-Bold-4.39.ttf')

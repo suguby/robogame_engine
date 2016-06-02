@@ -36,19 +36,19 @@ class CanLogging(object):
         return self.__logger
 
     def debug(self, pattern, *args, **kwargs):
-        if self.logger.level == logging.DEBUG:
+        if self.logger.level<= logging.DEBUG:
             self._log(self.logger.debug, pattern, args, kwargs)
 
     def info(self, pattern, *args, **kwargs):
-        if self.logger.level == logging.INFO:
+        if self.logger.level <= logging.INFO:
             self._log(self.logger.info, pattern, args, kwargs)
 
     def warning(self, pattern, *args, **kwargs):
-        if self.logger.level == logging.WARNING:
+        if self.logger.level <= logging.WARNING:
             self._log(self.logger.warning, pattern, args, kwargs)
 
     def error(self, pattern, *args, **kwargs):
-        if self.logger.level == logging.ERROR:
+        if self.logger.level <= logging.ERROR:
             self._log(self.logger.error, pattern, args, kwargs)
 
     def _log(self, log_fun, pattern, args, kwargs):

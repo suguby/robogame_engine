@@ -208,8 +208,8 @@ class GameObject(CanLogging):
         """
             Turn to the subject / in that direction
         """
-        if speed is None or speed > theme.MAX_TURN_SPED:
-            speed = theme.MAX_TURN_SPED
+        if speed is None or speed > theme.MAX_TURN_SPEED:
+            speed = theme.MAX_TURN_SPEED
         command = TurnCommand(obj=self, target=target, speed=speed)
         self.add_command(command)
 

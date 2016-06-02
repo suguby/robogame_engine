@@ -77,6 +77,7 @@ class Scene(CanLogging):
             self._checked_ids.append(obj.id)
 
     def _check_collisions(self, left):
+        # TODO переписать на while и pop
         for right in self.objects:
             if (right.id == left.id) or (right.id in self._checked_ids):
                 continue
