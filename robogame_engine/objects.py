@@ -190,8 +190,7 @@ class GameObject(CanLogging):
         """
             Is it near to the object?
         """
-        assert isinstance(obj, GameObject)
-        return self.distance_to(obj) <= self.radius + obj.radius
+        return self.distance_to(obj) <= self.radius
 
     def __str__(self):
         return 'obj({id}, {coord} {vector})'.format(**self.__dict__)
