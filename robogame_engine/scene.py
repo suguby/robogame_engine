@@ -23,7 +23,14 @@ class Scene(CanLogging):
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, **kwargs):
         theme.set_theme_module(mod_path=theme_mod_path)
         self.objects = []
-        self.game_speed = int(speed)
+        self.time_sleep = theme.GAME_STEP_MIN_TIME
+        if speed <= 0:
+            raise Exception("Game speed can't be zero or negative!")
+        elif speed > 1:
+            self.game_speed = int(speed)
+        else:
+            self.game_speed = 1
+            self.time_sleep /= speed
         GameObject.link_to_scene(
             scene=self,
             container=self.objects,
@@ -146,7 +153,7 @@ class Scene(CanLogging):
                     self.parent_conn.send(objects_status)
                     # вычисляем остаток времени на сон
                     cycle_time = time.time() - cycle_begin
-                    cycle_time_rest = theme.GAME_STEP_MIN_TIME - cycle_time
+                    cycle_time_rest = self.time_sleep - cycle_time
                     if cycle_time_rest > 0:
                         # о! есть время поспать... :)
                         time.sleep(cycle_time_rest)
