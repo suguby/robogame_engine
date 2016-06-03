@@ -9,7 +9,7 @@ from robogame_engine.geometry import Point
 class TestMoving(unittest.TestCase):
 
     def setUp(self):
-        self.scene = Scene(field=(100, 100))
+        self.scene = Scene(field=(100, 100), theme_mod_path='robogame_engine.tests.default_theme')
 
     def test_move_at(self):
         obj = GameObject(pos=Point(x=10, y=10))
