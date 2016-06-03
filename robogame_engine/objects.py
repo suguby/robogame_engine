@@ -8,7 +8,7 @@ from six import PY3
 from robogame_engine.geometry import Vector
 
 from .commands import TurnCommand, MoveCommand, StopCommand
-from .constants import ROTATE_NO_TURN, TURN_SPEED, MAX_SPEED
+from .constants import ROTATE_NO_TURN, MAX_SPEED
 from .theme import theme
 from .utils import CanLogging
 from .states import StateStopped, StateMoving
