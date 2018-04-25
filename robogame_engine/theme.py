@@ -38,4 +38,5 @@ class Theme(object):
             self.__dict__[item] = value
         return self.__dict__[item]
 
+
 theme = Theme()

@@ -36,7 +36,7 @@ class CanLogging(object):
         return self.__logger
 
     def debug(self, pattern, *args, **kwargs):
-        if self.logger.level<= logging.DEBUG:
+        if self.logger.level <= logging.DEBUG:
             self._log(self.logger.debug, pattern, args, kwargs)
 
     def info(self, pattern, *args, **kwargs):

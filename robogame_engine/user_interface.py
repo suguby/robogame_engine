@@ -15,11 +15,11 @@ from pygame.draw import line, circle, rect, aalines
 from pygame.display import set_caption, set_mode
 from pygame.time import Clock
 
-from .constants import (ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL,
-                                       ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH)
-from robogame_engine.geometry import Point
-from robogame_engine.utils import CanLogging
-from robogame_engine.theme import theme
+from .constants import (
+    ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL, ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH)
+from .geometry import Point
+from .utils import CanLogging
+from .theme import theme
 
 
 class RoboSprite(DirtySprite, CanLogging):
