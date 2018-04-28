@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import math
@@ -46,16 +45,31 @@ class Point(object):
 
     __radd__ = __add__
 
+    def __iadd__(self, vector):
+        assert isinstance(vector, Vector)
+        self.x += vector.x
+        self.y += vector.y
+        return self
+
     def __sub__(self, vector):
         assert isinstance(vector, Vector)
         return Point(self.x - vector.x, self.y - vector.y)
 
     __rsub__ = __sub__
 
+    def __isub__(self, vector):
+        assert isinstance(vector, Vector)
+        self.x -= vector.x
+        self.y -= vector.y
+        return self
+
     def __str__(self):
         return 'p({:.1f},{:.1f})'.format(self.x, self.y)
 
     __repr__ = __str__
+
+    def copy(self):
+        return self.__class__(self.x, self.y)
 
 
 class Vector(object):
@@ -143,6 +157,9 @@ class Vector(object):
     def __mul__(self, other):
         assert isinstance(other, int)
         return Vector(self.x * other, self.y * other)
+
+    def copy(self):
+        return self.__class__(self.x, self.y)
 
 
 def get_arctan(dy, dx):

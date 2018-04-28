@@ -4,21 +4,55 @@
 import logging
 import logging.config
 
-from .theme import theme
+from robogame_engine.geometry import Point
 
 
-def _collide_circle(left, right):
-    """
-        Detect collision by radius of objects
-    """
-    return left.distance_to(right) <= left.radius + right.radius
+class LocatableObject(object):
+
+    def __init__(self, coord=None, radius=10):
+        assert isinstance(coord, Point)
+        self.coord = coord if coord else Point(0, 0)
+        self.radius = radius
+
+    def distance_to(self, obj):
+        """
+            Calculate distance to <object/point>
+        """
+        if isinstance(obj, LocatableObject):  # и для порожденных классов
+            return self.coord.distance_to(obj.coord)
+        if isinstance(obj, Point):
+            return self.coord.distance_to(obj)
+        raise Exception("GameObject.distance_to: obj {} "
+                        "must be GameObject or Point!".format(obj,))
+
+    def near(self, obj):
+        """
+            Is it near to the object?
+        """
+        return self.distance_to(obj) <= self.radius
 
 
-def _overlapped(left, right):
-    """
-        Is two objects overlapped
-    """
-    return int((left.radius + right.radius) - left.distance_to(right))
+class Image(LocatableObject):
+    """ Image of game object for others """
+
+    def __init__(self, coord, radius, **kwargs):
+        super(Image, self).__init__(coord, radius)
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+# def _collide_circle(left, right):
+#     """
+#         Detect collision by radius of objects
+#     """
+#     return left.distance_to(right) <= left.radius + right.radius
+#
+#
+# def _overlapped(left, right):
+#     """
+#         Is two objects overlapped
+#     """
+#     return int((left.radius + right.radius) - left.distance_to(right))
 
 
 class CanLogging(object):
@@ -26,6 +60,7 @@ class CanLogging(object):
 
     @property
     def logger(self):
+        from .theme import theme
         if self.__logger is None:
             logging.config.dictConfig(theme.LOGGING)
             self.__logger = logging.getLogger('robogame')

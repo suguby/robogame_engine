@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from robogame_engine.utils import Image
 from .theme import theme
 from .geometry import Point, Vector
 from .utils import CanLogging
@@ -36,10 +36,10 @@ class MoveCommand(Command):
     def __init__(self, obj, target, speed, **kwargs):
         super(MoveCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
-        if isinstance(target, Point) or isinstance(target, GameObject):
+        if isinstance(target, (Point, GameObject, Image)):
             self.target = target
         else:
-            raise Exception("Target {} must Point or GameObject!".format(target))
+            raise Exception("Target {} must be one of Point, GameObject, Image".format(target))
         self.speed = speed
 
     def execute(self):
@@ -55,11 +55,11 @@ class TurnCommand(Command):
         super(TurnCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
         self.target = target
-        if isinstance(target, GameObject):
+        if isinstance(target, (GameObject, Image)):
             self.vector = Vector.from_points(self.obj.coord, target.coord)
         elif isinstance(target, Point):
             self.vector = Vector.from_points(self.obj.coord, target)
-        elif isinstance(target, int) or isinstance(target, float):
+        elif isinstance(target, (int, float)):
             # TODO убрать поддержку поворота к направлению ???
             direction = target
             self.vector = Vector.from_direction(direction, theme.MAX_SPEED)

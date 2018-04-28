@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
@@ -6,14 +5,14 @@ from random import randint
 
 from six import PY3
 from robogame_engine.geometry import Vector
+from robogame_engine.utils import Image, LocatableObject
 
 from .commands import TurnCommand, MoveCommand, StopCommand
-from .constants import ROTATE_NO_TURN, MAX_SPEED
+from .constants import ROTATE_NO_TURN
 from .theme import theme
 from .utils import CanLogging
 from .states import StateStopped, StateMoving
 from .events import (EventHearbeat, EventStopped, EventBorned)
-from .geometry import Point
 
 if PY3:
     from queue import Queue
@@ -21,7 +20,7 @@ else:
     from Queue import Queue
 
 
-class GameObject(CanLogging):
+class GameObject(LocatableObject, CanLogging):
     """
         Main game object
     """
@@ -35,20 +34,22 @@ class GameObject(CanLogging):
     _part_of_team = False
     __objects_count = 0
     __container = None
-    _scene = None
+    __scene = None
 
     @classmethod
     def link_to_scene(cls, scene, container):
-        cls._scene = scene
+        cls.__scene = scene
         cls.__container = container
 
-    def __init__(self, pos=None, direction=0):
-        if self._scene is None:
+    def __init__(self, coord=None, radius=None, direction=0):
+        if self.__scene is None:
             raise Exception("You must create Scene instance at first!")
+        if radius is None:
+            radius = self.__class__.radius
+        super(GameObject, self).__init__(coord, radius)
         self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
-        self.coord = pos if pos else Point(0, 0)
         if not direction:
             direction = randint(0, 360)
         self.vector = Vector.from_direction(direction, module=1)
@@ -61,6 +62,10 @@ class GameObject(CanLogging):
         self._selected = False
         self.add_event(EventBorned(self))
         self.debug('born {coord} {vector}')
+
+    @property
+    def scene(self):
+        return self.__scene
 
     @property
     def direction(self):
@@ -84,7 +89,7 @@ class GameObject(CanLogging):
     @property
     def team(self):
         if self._part_of_team:
-            return self._scene.get_team(cls=self.__class__)
+            return self.__scene.get_team(cls=self.__class__)
         return None
 
     @property
@@ -175,22 +180,14 @@ class GameObject(CanLogging):
             out = 0
         return out
 
-    def distance_to(self, obj):
-        """
-            Calculate distance to <object/point>
-        """
-        if isinstance(obj, GameObject):  # и для порожденных классов
-            return self.coord.distance_to(obj.coord)
-        if isinstance(obj, Point):
-            return self.coord.distance_to(obj)
-        raise Exception("GameObject.distance_to: obj {} "
-                        "must be GameObject or Point!".format(obj,))
-
-    def near(self, obj):
-        """
-            Is it near to the object?
-        """
-        return self.distance_to(obj) <= self.radius
+    @property
+    def image(self):
+        return Image(
+            coord=self.coord.copy(),
+            radius=self.radius,
+            id=self.id,
+            kind=self.__class__.__name__,
+        )
 
     def __str__(self):
         return 'obj({id}, {coord} {vector})'.format(**self.__dict__)
