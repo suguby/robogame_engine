@@ -42,7 +42,7 @@ class RoboSprite(DirtySprite, CanLogging):
             layer = 0
         super(RoboSprite, self).__init__(UserInterface.sprites_all, UserInterface.sprites_by_layer[layer])
 
-        image = load_image(self.status.sprite_filename, -1)
+        image = load_image(name=self.status.sprite_filename, colorkey=-1)
         self.images = [image, flip(image, 1, 0),
                        flip(image, 0, 1), flip(image, 1, 1)]
         self.image = self.images[0].copy()
@@ -182,7 +182,12 @@ class RoboSprite(DirtySprite, CanLogging):
             rot_image = pygame.transform.rotate(image, angle)
             rot_rect = orig_rect.copy()
             rot_rect.center = rot_image.get_rect().center
-            rot_image = rot_image.subsurface(rot_rect).copy()
+            try:
+                rot_image = rot_image.subsurface(rot_rect).copy()
+            except Exception as exc:
+                # TODO разобраться со смещением
+                pass
+                # self.logger.warning("UI: Can't shift rotated image {} {} {} {}".format(image_name, angle, rot_image, rot_rect))
             self.__images_cash[image_name][angle] = rot_image
             return rot_image.copy()
 
@@ -255,19 +260,20 @@ class UserInterface(CanLogging):
         self.ui_state = UserInput()
 
         self._debug = False
+        self.child_conn = None
 
     def run(self, child_conn):
         self.child_conn = child_conn
         while True:
             try:
-                objects_state = None
-                # проверяем есть ли данные на том конце трубы
-                while self.child_conn.poll(0):
-                    # данные есть - считываем все что есть
-                    objects_state = self.child_conn.recv()
+                objects_state = self._get_states()
                 if objects_state:
                     # были получены данные - обновляемся
-                    self.update_state(objects_state)
+                    try:
+                        self.update_state(objects_state)
+                    except Exception as exc:
+                        self.logger.error('UI update_state: {}'.format(exc))
+
                 # проверяем - изменилось ли что-то у пользователя
                 if self.ui_state_changed() or self.ui_state.one_step:
                     # изменилось - отсылаем состояние в трубу
@@ -276,14 +282,23 @@ class UserInterface(CanLogging):
                     if self.ui_state.the_end:
                         break
                 # отрисовываемся
-                self.draw()
+                try:
+                    self.draw()
+                except Exception as exc:
+                    self.logger.error('UI draw: {}'.format(exc))
             except Exception as exc:
-                print('UI: {}'.format(exc))
+                self.logger.error('UI: {}'.format(exc))
         # очистка
         for group in self.sprites_by_layer:
             for sprite in group:
                 sprite.kill()
         pygame.quit()
+
+    def _get_states(self):
+        # проверяем есть ли данные на том конце трубы
+        while self.child_conn.poll(0):
+            # данные есть - считываем все что есть
+            return self.child_conn.recv()
 
     def update_state(self, objects_status):
         """
@@ -362,7 +377,7 @@ class UserInterface(CanLogging):
 
         if self.ui_state.mouse_buttons[0] and not self.mouse_buttons[0]:
             # mouse down
-            for obj_id, obj in self.game_objects.iteritems():
+            for obj_id, obj in self.game_objects.items():
                 if obj.status.selectable and \
                    obj.rect.collidepoint(self.ui_state.mouse_pos):
                     # координаты экранные
@@ -406,14 +421,20 @@ class UserInterface(CanLogging):
 
         # update all the sprites
         for group in self.sprites_by_layer:
-            group.update()
+            try:
+                group.update()
+            except Exception as exc:
+                self.logger.exception('UI group.update: {}'.format(exc))
 
         # draw the scene
         # if self._debug:
-        if True:  # TODO разобраться с частичным обновлением
+        if False:  # TODO разобраться с частичным обновлением
             self.screen.blit(self.background, (0, 0))
             for group in self.sprites_by_layer:
-                group.draw(self.screen)
+                try:
+                    group.draw(self.screen)
+                except Exception as exc:
+                    self.logger.error('UI group.draw: {}'.format(exc))
             # for obj in self.all:
             #     if hasattr(obj, 'status') and \
             #        hasattr(obj.status, 'gun_heat') and \
