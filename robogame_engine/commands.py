@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from robogame_engine.utils import Image
 from .theme import theme
 from .geometry import Point, Vector
 from .utils import CanLogging
@@ -36,7 +35,7 @@ class MoveCommand(Command):
     def __init__(self, obj, target, speed, **kwargs):
         super(MoveCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
-        if isinstance(target, (Point, GameObject, Image)):
+        if isinstance(target, (Point, GameObject)):
             self.target = target
         else:
             raise Exception("Target {} must be one of Point, GameObject, Image".format(target))
@@ -55,7 +54,7 @@ class TurnCommand(Command):
         super(TurnCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
         self.target = target
-        if isinstance(target, (GameObject, Image)):
+        if isinstance(target, (GameObject, )):
             self.vector = Vector.from_points(self.obj.coord, target.coord)
         elif isinstance(target, Point):
             self.vector = Vector.from_points(self.obj.coord, target)

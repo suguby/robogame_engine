@@ -4,8 +4,7 @@ from collections import defaultdict
 from random import randint
 
 from six import PY3
-from robogame_engine.geometry import Vector
-from robogame_engine.utils import Image, LocatableObject
+from robogame_engine.geometry import Vector, Point
 
 from .commands import TurnCommand, MoveCommand, StopCommand
 from .constants import ROTATE_NO_TURN
@@ -20,7 +19,7 @@ else:
     from Queue import Queue
 
 
-class GameObject(LocatableObject, CanLogging):
+class GameObject(CanLogging):
     """
         Main game object
     """
@@ -46,7 +45,8 @@ class GameObject(LocatableObject, CanLogging):
             raise Exception("You must create Scene instance at first!")
         if radius is None:
             radius = self.__class__.radius
-        super(GameObject, self).__init__(coord, radius)
+        self.coord = coord if coord else Point(0, 0)
+        self.radius = radius
         self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
@@ -143,6 +143,23 @@ class GameObject(LocatableObject, CanLogging):
         self._check_runout()
         self._heartbeat()
 
+    def distance_to(self, obj):
+        """
+            Calculate distance to <object/point>
+        """
+        if isinstance(obj, GameObject):  # и для порожденных классов
+            return self.coord.distance_to(obj.coord)
+        if isinstance(obj, Point):
+            return self.coord.distance_to(obj)
+        raise Exception("GameObject.distance_to: obj {} "
+                        "must be GameObject or Point!".format(obj,))
+
+    def near(self, obj):
+        """
+            Is it near to the object?
+        """
+        return self.distance_to(obj) <= self.radius
+
     def _heartbeat(self):
         self._heartbeat_tics -= 1
         if not self._heartbeat_tics:
@@ -179,15 +196,6 @@ class GameObject(LocatableObject, CanLogging):
         if out < 0:
             out = 0
         return out
-
-    @property
-    def image(self):
-        return Image(
-            coord=self.coord.copy(),
-            radius=self.radius,
-            id=self.id,
-            kind=self.__class__.__name__,
-        )
 
     def __str__(self):
         return 'obj({id}, {coord} {vector})'.format(**self.__dict__)
