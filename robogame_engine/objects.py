@@ -4,6 +4,8 @@ from collections import defaultdict
 from random import randint
 
 from six import PY3
+
+from robogame_engine.exceptions import RobogameException
 from robogame_engine.geometry import Vector, Point
 
 from .commands import TurnCommand, MoveCommand, StopCommand
@@ -30,10 +32,11 @@ class GameObject(CanLogging):
     layer = 0
 
     _sprite_filename = None
-    _part_of_team = False
+    auto_team = False
     __objects_count = 0
     __container = None
     __scene = None
+    __team = None
 
     @classmethod
     def link_to_scene(cls, scene, container):
@@ -42,7 +45,7 @@ class GameObject(CanLogging):
 
     def __init__(self, coord=None, radius=None, direction=0):
         if self.__scene is None:
-            raise Exception("You must create Scene instance at first!")
+            raise RobogameException("You must create Scene instance at first!")
         if radius is None:
             radius = self.__class__.radius
         self.coord = coord if coord else Point(0, 0)
@@ -55,7 +58,8 @@ class GameObject(CanLogging):
         self.vector = Vector.from_direction(direction, module=1)
         self.target = None
         self.state = StateStopped(obj=self)
-
+        if self.auto_team:
+            self.__team = self.scene.get_team(cls=self.__class__)
         self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
         self._events = Queue()
         self._commands = Queue()
@@ -88,9 +92,7 @@ class GameObject(CanLogging):
 
     @property
     def team(self):
-        if self._part_of_team:
-            return self.__scene.get_team(cls=self.__class__)
-        return None
+        return self.__team
 
     @property
     def meter_1(self):
@@ -114,6 +116,9 @@ class GameObject(CanLogging):
             return obj.class_name == cls.__name__
         except AttributeError:
             return False
+
+    def set_team(self, team):
+        self.__team = team
 
     def add_event(self, event):
         self._events.put(event)

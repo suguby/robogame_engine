@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from robogame_engine.exceptions import RobogameException
 from .theme import theme
 from .geometry import Point, Vector
 from .utils import CanLogging
@@ -38,7 +39,7 @@ class MoveCommand(Command):
         if isinstance(target, (Point, GameObject)):
             self.target = target
         else:
-            raise Exception("Target {} must be one of Point, GameObject, Image".format(target))
+            raise RobogameException("Target {} must be one of Point, GameObject, Image".format(target))
         self.speed = speed
 
     def execute(self):
@@ -64,7 +65,7 @@ class TurnCommand(Command):
             self.vector = Vector.from_direction(direction, theme.MAX_SPEED)
             self.target = obj.coord + self.vector * 100
         else:
-            raise Exception("use GameObject.turn_to(GameObject/Point "
+            raise RobogameException("use GameObject.turn_to(GameObject/Point "
                             "or Angle). Your pass {}".format(target))
 
     def execute(self):

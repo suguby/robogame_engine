@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from importlib import import_module
+
+from robogame_engine.exceptions import RobogameException
 from . import constants
 
 
@@ -13,7 +15,7 @@ class Theme(object):
         try:
             self.module = import_module(self.mod_path)
         except ImportError:
-            raise Exception("Can't load theme {}".format(self.mod_path))
+            raise RobogameException("Can't load theme {}".format(self.mod_path))
 
     def __getattr__(self, item):
         if item not in self.__dict__:

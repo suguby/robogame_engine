@@ -5,6 +5,7 @@ from multiprocessing import Pipe, Process
 from random import randint
 import time
 
+from robogame_engine.exceptions import RobogameException
 from .events import EventCollide
 from .geometry import Vector, Point
 from .objects import ObjectStatus, GameObject
@@ -18,14 +19,14 @@ class Scene(CanLogging):
         Game scene. Container for all game objects.
     """
     check_collisions = True
-    _teams = {}
+    __teams = []
 
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, **kwargs):
         theme.set_theme_module(mod_path=theme_mod_path)
         self.objects = []
         self.time_sleep = theme.GAME_STEP_MIN_TIME
         if speed <= 0:
-            raise Exception("Game speed can't be zero or negative!")
+            raise RobogameException("Game speed can't be zero or negative!")
         elif speed > 1:
             self.game_speed = int(speed)
         else:
@@ -35,6 +36,7 @@ class Scene(CanLogging):
             scene=self,
             container=self.objects,
         )
+        self.init_kwargs = kwargs
         self.hold_state = False  # режим пошаговой отладки
         self.name = name
         if field:
@@ -43,19 +45,23 @@ class Scene(CanLogging):
         self.ui = None
         self._step = 0
         self._checked_ids = []
-        self.prepare(**kwargs)
 
     def get_team(self, cls):
-        try:
-            return self._teams[cls.__name__]
-        except KeyError:
-            team = max(self._teams.values()) + 1 if self._teams else 1
-            if team > theme.TEAMS_COUNT:
-                raise Exception(
-                    "Only {} teams! No team for {}".format(
+        if cls not in self.__teams:
+            if self.teams_count >= theme.TEAMS_COUNT:
+                raise RobogameException(
+                    "Only {} teams! Can't create team for {}".format(
                         theme.TEAMS_COUNT, cls.__name__))
-            self._teams[cls.__name__] = team
-            return team
+            self.__teams.append(cls)
+        return self.__teams.index(cls) + 1
+
+    @property
+    def teams(self):
+        return self.__teams.copy()
+
+    @property
+    def teams_count(self):
+        return len(self.__teams)
 
     def prepare(self, **kwargs):
         pass
@@ -66,8 +72,12 @@ class Scene(CanLogging):
         except ValueError:
             self.logger.warning("Try to remove unexists obj {}".format(obj))
 
-    def get_objects_by_type(self, cls):
-        return [obj for obj in self.objects if isinstance(obj, cls)]
+    def get_objects_by_type(self, cls=None, cls_name=None):
+        if cls:
+            cls_name = cls.__name__
+        elif cls_name is None:
+            raise RobogameException('get_objects_by_type need ether cls or cls_name!')
+        return [obj for obj in self.objects if obj.__class__.__name__ == cls_name]
 
     def game_step(self):
         """
@@ -105,15 +115,14 @@ class Scene(CanLogging):
                 right.add_event(EventCollide(left))
 
     def get_objects_status(self):
-        """
-
-        """
+        # TODO скорее get_statuses
         return dict([(obj.id, ObjectStatus(obj)) for obj in self.objects])
 
     def go(self):
         """
             Main game cycle - the game begin!
         """
+        self.prepare(**self.init_kwargs)
         self.parent_conn, child_conn = Pipe()
         self.ui = Process(target=start_ui, args=(self.name, child_conn, theme.mod_path))
         self.ui.start()

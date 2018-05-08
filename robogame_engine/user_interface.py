@@ -428,7 +428,7 @@ class UserInterface(CanLogging):
 
         # draw the scene
         # if self._debug:
-        if False:  # TODO разобраться с частичным обновлением
+        if True:  # TODO разобраться с частичным обновлением
             self.screen.blit(self.background, (0, 0))
             for group in self.sprites_by_layer:
                 try:
