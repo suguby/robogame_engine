@@ -21,6 +21,8 @@ ROTATE_NO_TURN = 'NO_TURN'
 
 BACKGROUND_COLOR = (128, 128, 128)
 
+TEAMS_COUNT = 1
+
 LOGGING = {
     'version': 1,
     # 'disable_existing_loggers': False,
