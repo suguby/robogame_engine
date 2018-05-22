@@ -42,9 +42,6 @@ class RoboSprite(DirtySprite, CanLogging):
             layer = 0
         super(RoboSprite, self).__init__(UserInterface.sprites_all, UserInterface.sprites_by_layer[layer])
 
-        image = load_image(name=self.status.sprite_filename, colorkey=-1)
-        self.images = [image, flip(image, 1, 0),
-                       flip(image, 0, 1), flip(image, 1, 1)]
         self.image = self.images[0].copy()
         self.rect = self.image.get_rect()
         self._debug_color = (
@@ -66,6 +63,16 @@ class RoboSprite(DirtySprite, CanLogging):
 
     def __repr__(self):
         return str(self)
+
+    @property
+    def images(self):
+        sprite_filename = self.status.sprite_filename
+        if 0 in self.__images_cash[sprite_filename]:
+            image = self.__images_cash[sprite_filename][0]
+        else:
+            image = load_image(name=sprite_filename, colorkey=-1)
+            self.__images_cash[sprite_filename][0] = image
+        return [image, flip(image, 1, 0), flip(image, 0, 1), flip(image, 1, 1)]
 
     @property
     def font(self):
@@ -117,12 +124,8 @@ class RoboSprite(DirtySprite, CanLogging):
             for obj in self.status.detected_by:
                 if obj.selected:
                     radius += 6
-                    circle(self.image,
-                        obj._debug_color,
-                        (self.rect.width // 2,
-                         self.rect.height // 2),
-                        radius,
-                        3)
+                    pos = (self.rect.width // 2, self.rect.height // 2)
+                    circle(self.image, obj._debug_color, pos, radius, 3)
 
     def update(self):
         """

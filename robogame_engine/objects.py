@@ -280,14 +280,13 @@ class ObjectStatus:
     __fields = defaultdict(list)
 
     def __init__(self, obj):
+        self.class_name = obj.__class__.__name__
         for attr_name in self.fields(obj):
             attr = getattr(obj, attr_name)
             setattr(self, attr_name, attr)
-        self.class_name = obj.__class__.__name__
 
     def fields(self, obj):
-        class_name = obj.__class__.__name__
-        if class_name not in self.__fields:
+        if self.class_name not in self.__fields:
             for attr_name in dir(obj):
                 if attr_name.startswith('_'):
                     continue
@@ -296,7 +295,7 @@ class ObjectStatus:
                     continue
                 for ttype in self.SEND_TYPES:
                     if isinstance(attr, ttype):
-                        self.__fields[class_name].append(attr_name)
+                        self.__fields[self.class_name].append(attr_name)
                         break
-        return self.__fields[class_name]
+        return self.__fields[self.class_name]
 
