@@ -144,7 +144,7 @@ class Vector(object):
         delattr(self, '_direction')
 
     def __str__(self):
-        return 'v({:.1f},{:.1f})'.format(self.x, self.y)
+        return 'v({:.1f},{:.1f})'.format(self.direction, self.module)
 
     __repr__ = __str__
 

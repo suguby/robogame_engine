@@ -43,7 +43,7 @@ class GameObject(CanLogging):
         cls.__scene = scene
         cls.__container = container
 
-    def __init__(self, coord=None, radius=None, direction=0):
+    def __init__(self, coord=None, radius=None, direction=None):
         if self.__scene is None:
             raise RobogameException("You must create Scene instance at first!")
         if radius is None:
@@ -53,7 +53,7 @@ class GameObject(CanLogging):
         self.__container.append(self)
         GameObject.__objects_count += 1
         self.id = GameObject.__objects_count
-        if not direction:
+        if direction is None:
             direction = randint(0, 360)
         self.vector = Vector.from_direction(direction, module=1)
         self.target = None

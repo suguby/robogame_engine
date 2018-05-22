@@ -51,25 +51,25 @@ class MoveCommand(Command):
 
 class TurnCommand(Command):
 
-    def __init__(self, obj, target, **kwargs):
+    def __init__(self, obj, target, speed=None, **kwargs):
         super(TurnCommand, self).__init__(obj, **kwargs)
         from .objects import GameObject
         self.target = target
+        self.speed = speed
         if isinstance(target, (GameObject, )):
-            self.vector = Vector.from_points(self.obj.coord, target.coord)
+            self.vector = Vector.from_points(point1=self.obj.coord, point2=target.coord)
         elif isinstance(target, Point):
-            self.vector = Vector.from_points(self.obj.coord, target)
+            self.vector = Vector.from_points(point1=self.obj.coord, point2=target)
         elif isinstance(target, (int, float)):
-            # TODO убрать поддержку поворота к направлению ???
             direction = target
-            self.vector = Vector.from_direction(direction, theme.MAX_SPEED)
-            self.target = obj.coord + self.vector * 100
+            self.vector = Vector.from_direction(direction=direction, module=theme.MAX_SPEED)
+            self.target = obj.coord + self.vector * 500
         else:
             raise RobogameException("use GameObject.turn_to(GameObject/Point "
                             "or Angle). Your pass {}".format(target))
 
     def execute(self):
-        self.obj.state.turn(vector=self.vector, target=self.target)
+        self.obj.state.turn(vector=self.vector, target=self.target, speed=self.speed)
 
     def __str__(self):
         return super(TurnCommand, self).__str__() + " tgt={}".format(self.target)

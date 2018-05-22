@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .theme import theme
-from .events import EventStoppedAtTargetPoint
+from .events import EventStoppedAtTargetPoint, EventStopped
 from .geometry import Vector
 from .utils import CanLogging
 
@@ -28,8 +28,8 @@ class ObjectState(CanLogging):
     def stop(self):
         self.obj.state = StateStopped(obj=self.obj)
 
-    def turn(self, vector, target):
-        self.obj.state = StateTurning(obj=self.obj, vector=vector, target=target)
+    def turn(self, vector, target, speed=None):
+        self.obj.state = StateTurning(obj=self.obj, vector=vector, target=target, speed=speed)
 
     def step(self):
         raise NotImplementedError
@@ -43,7 +43,7 @@ class StateTurning(ObjectState):
 
     def __init__(self, obj, target=None, speed=None, **kwargs):
         super(StateTurning, self).__init__(obj=obj, target=target, speed=speed, **kwargs)
-        self.turn_speed = self.kwargs.get('turn_speed', theme.MAX_TURN_SPEED)
+        self.turn_speed = speed if speed else theme.MAX_TURN_SPEED
 
     def step(self):
         obj = self.obj
@@ -54,6 +54,8 @@ class StateTurning(ObjectState):
                 obj.state = StateMoving(obj=obj, target=self.target_point, speed=self.speed)
             else:
                 obj.state = StateStopped(obj=obj)
+                event = EventStopped()
+                self.obj.add_event(event)
         else:
             if -180 < delta < 0 or delta > 180:
                 obj.vector.rotate(-self.turn_speed)
@@ -92,7 +94,7 @@ class StateDead(ObjectState):
     def stop(self):
         pass
 
-    def turn(self, vector, target):
+    def turn(self, vector, target, speed=None):
         pass
 
     def step(self):
