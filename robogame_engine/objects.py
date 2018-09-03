@@ -68,6 +68,10 @@ class GameObject(CanLogging):
         self.debug('born {coord} {vector}')
 
     @property
+    def zoom(self):
+        return 1
+
+    @property
     def scene(self):
         return self.__scene
 

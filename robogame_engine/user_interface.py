@@ -175,31 +175,10 @@ class RoboSprite(DirtySprite, CanLogging):
 
     def _rotate_image(self):
         angle = int(self.status.direction)
+        zoom = float(getattr(self.status, 'zoom', 1))
         image = self.images[0]
-        rot_image = pygame.transform.rotate(image, angle)
+        rot_image = pygame.transform.rotozoom(image, angle, zoom)
         return rot_image.copy()
-        # TODO выключил кэш - одни промахи
-        # """
-        #     rotate an image while keeping its center and size
-        # """
-        # image = self.images[0]
-        # image_name = self.status.sprite_filename
-        # angle = int(self.status.direction)
-        # try:
-        #     return self.__images_cash[image_name][angle].copy()
-        # except KeyError:
-        #     orig_rect = image.get_rect()
-        #     rot_image = pygame.transform.rotate(image, angle)
-        #     rot_rect = orig_rect.copy()
-        #     rot_rect.center = rot_image.get_rect().center
-        #     try:
-        #         rot_image = rot_image.subsurface(rot_rect).copy()
-        #     except Exception as exc:
-        #         # TODO разобраться со смещением
-        #         pass
-        #         # self.logger.warning("UI: Can't shift rotated image {} {} {} {}".format(image_name, angle, rot_image, rot_rect))
-        #     self.__images_cash[image_name][angle] = rot_image
-        #     return rot_image.copy()
 
 
 class UserInput:
