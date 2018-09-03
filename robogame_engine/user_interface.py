@@ -132,11 +132,10 @@ class RoboSprite(DirtySprite, CanLogging):
             Internal function for refreshing internal variables.
             Do not call in your code!
         """
-        self.rect.center = Point(self.status.x, self.status.y).to_screen()
         rotate_mode = self.status.rotate_mode
         if rotate_mode != ROTATE_NO_TURN:
             if rotate_mode == ROTATE_TURNING:
-                self.image = self._rotate_about_center()
+                self.image = self._rotate_image()
             elif rotate_mode == ROTATE_FLIP_VERTICAL:
                 if 90 <= self.status.direction <= 270:
                     self.image = self.images[1].copy()
@@ -165,34 +164,42 @@ class RoboSprite(DirtySprite, CanLogging):
         else:
             self.image = self.images[0].copy()
 
+        self.rect = self.image.get_rect()
+        self.rect.center = Point(self.status.x, self.status.y).to_screen()
+
         self._show_meters()
         self._show_selected()
         if hasattr(self.status, 'debug') and self.status.debug:
             self._show_id()
             self._show_detection()
 
-    def _rotate_about_center(self):
-        """
-            rotate an image while keeping its center and size
-        """
-        image = self.images[0]
-        image_name = self.status.sprite_filename
+    def _rotate_image(self):
         angle = int(self.status.direction)
-        try:
-            return self.__images_cash[image_name][angle].copy()
-        except KeyError:
-            orig_rect = image.get_rect()
-            rot_image = pygame.transform.rotate(image, angle)
-            rot_rect = orig_rect.copy()
-            rot_rect.center = rot_image.get_rect().center
-            try:
-                rot_image = rot_image.subsurface(rot_rect).copy()
-            except Exception as exc:
-                # TODO разобраться со смещением
-                pass
-                # self.logger.warning("UI: Can't shift rotated image {} {} {} {}".format(image_name, angle, rot_image, rot_rect))
-            self.__images_cash[image_name][angle] = rot_image
-            return rot_image.copy()
+        image = self.images[0]
+        rot_image = pygame.transform.rotate(image, angle)
+        return rot_image.copy()
+        # TODO выключил кэш - одни промахи
+        # """
+        #     rotate an image while keeping its center and size
+        # """
+        # image = self.images[0]
+        # image_name = self.status.sprite_filename
+        # angle = int(self.status.direction)
+        # try:
+        #     return self.__images_cash[image_name][angle].copy()
+        # except KeyError:
+        #     orig_rect = image.get_rect()
+        #     rot_image = pygame.transform.rotate(image, angle)
+        #     rot_rect = orig_rect.copy()
+        #     rot_rect.center = rot_image.get_rect().center
+        #     try:
+        #         rot_image = rot_image.subsurface(rot_rect).copy()
+        #     except Exception as exc:
+        #         # TODO разобраться со смещением
+        #         pass
+        #         # self.logger.warning("UI: Can't shift rotated image {} {} {} {}".format(image_name, angle, rot_image, rot_rect))
+        #     self.__images_cash[image_name][angle] = rot_image
+        #     return rot_image.copy()
 
 
 class UserInput:

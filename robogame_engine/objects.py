@@ -46,6 +46,8 @@ class GameObject(CanLogging):
     def __init__(self, coord=None, radius=None, direction=None):
         if self.__scene is None:
             raise RobogameException("You must create Scene instance at first!")
+        if self.auto_team:
+            self.__team = self.scene.get_team(cls=self.__class__)
         if radius is None:
             radius = self.__class__.radius
         self.coord = coord if coord else Point(0, 0)
@@ -58,8 +60,6 @@ class GameObject(CanLogging):
         self.vector = Vector.from_direction(direction, module=1)
         self.target = None
         self.state = StateStopped(obj=self)
-        if self.auto_team:
-            self.__team = self.scene.get_team(cls=self.__class__)
         self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
         self._events = Queue()
         self._commands = Queue()
