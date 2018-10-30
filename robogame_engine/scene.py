@@ -74,7 +74,7 @@ class Scene(CanLogging):
 
     def get_objects_by_type(self, cls=None, cls_name=None):
         if cls:
-            cls_name = cls.__name__
+            return [obj for obj in self.objects if issubclass(obj.__class__, cls)]
         elif cls_name is None:
             raise RobogameException('get_objects_by_type need ether cls or cls_name!')
         return [obj for obj in self.objects if obj.__class__.__name__ == cls_name]
