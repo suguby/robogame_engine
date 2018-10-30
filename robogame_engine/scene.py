@@ -6,7 +6,7 @@ from random import randint
 import time
 
 from robogame_engine.exceptions import RobogameException
-from .events import EventCollide
+from .events import EventCollide, EventCollideDetected
 from .geometry import Vector, Point
 from .objects import ObjectStatus, GameObject
 from .theme import theme
@@ -19,6 +19,7 @@ class Scene(CanLogging):
         Game scene. Container for all game objects.
     """
     check_collisions = True
+    detect_collisions = False
     __teams = []
 
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, **kwargs):
@@ -91,9 +92,11 @@ class Scene(CanLogging):
             obj.game_step()
             if self.check_collisions:
                 self._check_collisions(obj)
+            elif self.detect_collisions:
+                self._detect_collisions(obj)
             self._checked_ids.append(obj.id)
 
-    def _check_collisions(self, left):
+    def __collided_objects(self, left):
         # TODO переписать на while и pop
         for right in self.objects:
             if (right.id == left.id) or (right.id in self._checked_ids):
@@ -106,13 +109,22 @@ class Scene(CanLogging):
             overlap_distance = int(left.radius + right.radius - distance)
             if overlap_distance > 1:
                 # may intersect by one pixel
-                module = overlap_distance // 2
-                step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
-                left.debug('step_back_vector {}'.format(step_back_vector))
-                left.coord += step_back_vector
-                right.coord -= step_back_vector
-                left.add_event(EventCollide(right))
-                right.add_event(EventCollide(left))
+                yield overlap_distance, right
+
+    def _detect_collisions(self, left):
+        for _, right in self.__collided_objects(left):
+            left.add_event(EventCollideDetected(right))
+            right.add_event(EventCollideDetected(left))
+
+    def _check_collisions(self, left):
+        for overlap_distance, right in self.__collided_objects(left):
+            module = overlap_distance // 2
+            step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
+            left.debug('step_back_vector {}'.format(step_back_vector))
+            left.coord += step_back_vector
+            right.coord -= step_back_vector
+            left.add_event(EventCollide(right))
+            right.add_event(EventCollide(left))
 
     def get_objects_status(self):
         # TODO скорее get_statuses

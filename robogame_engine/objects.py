@@ -269,6 +269,12 @@ class GameObject(CanLogging):
         """
         self.info('collided with {}'.format(obj_status))
 
+    def on_collide_detected_with(self, obj_status):
+        """
+            Event: Collide
+        """
+        self.info('collided detected with {}'.format(obj_status))
+
     def on_hearbeat(self):
         """
             Event: Heartbeat
