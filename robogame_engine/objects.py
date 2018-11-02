@@ -269,11 +269,11 @@ class GameObject(CanLogging):
         """
         self.info('collided with {}'.format(obj_status))
 
-    def on_collide_detected_with(self, obj_status):
+    def on_overlap_with(self, obj_status):
         """
-            Event: Collide
+            Event: Overlap
         """
-        self.info('collided detected with {}'.format(obj_status))
+        self.info('overlapped with {}'.format(obj_status))
 
     def on_hearbeat(self):
         """
