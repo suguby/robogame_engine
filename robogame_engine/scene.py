@@ -6,7 +6,7 @@ from random import randint
 import time
 
 from robogame_engine.exceptions import RobogameException
-from .events import EventCollide, EventCollideDetected
+from .events import EventCollide, EventOverlap
 from .geometry import Vector, Point
 from .objects import ObjectStatus, GameObject
 from .theme import theme
@@ -19,7 +19,7 @@ class Scene(CanLogging):
         Game scene. Container for all game objects.
     """
     check_collisions = True
-    detect_collisions = False
+    detect_overlaps = False
     __teams = []
 
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, **kwargs):
@@ -92,11 +92,11 @@ class Scene(CanLogging):
             obj.game_step()
             if self.check_collisions:
                 self._check_collisions(obj)
-            elif self.detect_collisions:
-                self._detect_collisions(obj)
+            elif self.detect_overlaps:
+                self._detect_overlaps(obj)
             self._checked_ids.append(obj.id)
 
-    def __collided_objects(self, left):
+    def __overlapped_objects(self, left):
         # TODO переписать на while и pop
         for right in self.objects:
             if (right.id == left.id) or (right.id in self._checked_ids):
@@ -111,13 +111,13 @@ class Scene(CanLogging):
                 # may intersect by one pixel
                 yield overlap_distance, right
 
-    def _detect_collisions(self, left):
-        for _, right in self.__collided_objects(left):
-            left.add_event(EventCollideDetected(right))
-            right.add_event(EventCollideDetected(left))
+    def _detect_overlaps(self, left):
+        for _, right in self.__overlapped_objects(left):
+            left.add_event(EventOverlap(right))
+            right.add_event(EventOverlap(left))
 
     def _check_collisions(self, left):
-        for overlap_distance, right in self.__collided_objects(left):
+        for overlap_distance, right in self.__overlapped_objects(left):
             module = overlap_distance // 2
             step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
             left.debug('step_back_vector {}'.format(step_back_vector))

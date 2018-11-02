@@ -48,10 +48,10 @@ class EventCollide(GameEvent):
     def handle(self, obj):
         obj.on_collide_with(self._event_objs)
 
-class EventCollideDetected(GameEvent):
+class EventOverlap(GameEvent):
 
     def handle(self, obj):
-        obj.on_collide_detected_with(self._event_objs)
+        obj.on_overlap_with(self._event_objs)
 
 
 class EventHearbeat(GameEvent):
