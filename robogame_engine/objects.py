@@ -269,6 +269,12 @@ class GameObject(CanLogging):
         """
         self.info('collided with {}'.format(obj_status))
 
+    def on_overlap_with(self, obj_status):
+        """
+            Event: Overlap
+        """
+        self.info('overlapped with {}'.format(obj_status))
+
     def on_hearbeat(self):
         """
             Event: Heartbeat
