@@ -316,6 +316,8 @@ class UserInterface(CanLogging):
             # существующие объекты - обновляем состояния
             sprite = self.game_objects[obj_id]
             status = objects_status[obj_id]
+            if sprite.status.layer != status.layer:
+                self.move_object_to_layer(sprite, status.layer)
             sprite.update_status(status)
             new_game_objects[obj_id] = sprite
         self.info('updated {count} objs', count=len(to_update))
@@ -384,6 +386,13 @@ class UserInterface(CanLogging):
     def clear_screen(self):
         self.screen.blit(self.background, (0, 0))
         pygame.display.flip()
+
+    def move_object_to_layer(self, sprite, to_layer):
+        from_layer = sprite.status.layer
+        if from_layer == to_layer:
+            return
+        self.sprites_by_layer[from_layer].remove(sprite)
+        self.sprites_by_layer[to_layer].add(sprite)
 
     def _draw_radar_outline(self, obj):
         from math import pi, cos, sin
