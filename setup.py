@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='robogame_engine',
-    version='0.9.0',
+    version='1.0.0',
     packages=['robogame_engine'],
     include_package_data=True,
     license='BSD License',
@@ -27,6 +27,6 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     install_requires=[
-        'six', 'pygame'
+        'six==1.12.0', 'pygame==1.9.5'
     ]
 )
