@@ -36,7 +36,7 @@ class GameObject(CanLogging):
     __objects_count = 0
     __container = None
     __scene = None
-    __team = None
+    __team_name = None
 
     @classmethod
     def link_to_scene(cls, scene, container):
@@ -47,7 +47,7 @@ class GameObject(CanLogging):
         if self.__scene is None:
             raise RobogameException("You must create Scene instance at first!")
         if self.auto_team:
-            self.__team = self.scene.get_team(cls=self.__class__)
+            self.scene.register_to_team(obj=self)
         if radius is None:
             radius = self.__class__.radius
         self.coord = coord if coord else Point(0, 0)
@@ -96,7 +96,18 @@ class GameObject(CanLogging):
 
     @property
     def team(self):
-        return self.__team
+        if self.__team_name:
+            return self.__team_name
+        if self.auto_team:
+            return self.__class__.__name__
+
+    @team.setter
+    def set_team_name(self, value):
+        self.__team_name = value
+
+    @property
+    def team_number(self):
+        return self.scene.get_team_number(self.team)
 
     @property
     def meter_1(self):
@@ -121,8 +132,8 @@ class GameObject(CanLogging):
         except AttributeError:
             return False
 
-    def set_team(self, team):
-        self.__team = team
+    def set_team(self, team_name):
+        self.__team_name = team_name
 
     def add_event(self, event):
         self._events.put(event)

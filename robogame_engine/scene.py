@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+
+from collections import defaultdict, OrderedDict
 from multiprocessing import Pipe, Process
 from random import randint
 import time
@@ -20,7 +22,7 @@ class Scene(CanLogging):
     """
     check_collisions = True
     detect_overlaps = False
-    __teams = []
+    __teams = OrderedDict()
 
     def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, **kwargs):
         theme.set_theme_module(mod_path=theme_mod_path)
@@ -47,14 +49,19 @@ class Scene(CanLogging):
         self._step = 0
         self._checked_ids = []
 
-    def get_team(self, cls):
-        if cls not in self.__teams:
+    def register_to_team(self, obj):
+        if obj.team not in self.__teams:
             if self.teams_count >= theme.TEAMS_COUNT:
                 raise RobogameException(
                     "Only {} teams! Can't create team for {}".format(
-                        theme.TEAMS_COUNT, cls.__name__))
-            self.__teams.append(cls)
-        return self.__teams.index(cls) + 1
+                        theme.TEAMS_COUNT, obj.team))
+            self.__teams[obj.team] = []
+        self.__teams[obj.team].append(obj)
+
+    def get_team_number(self, team):
+        if team is None:
+            return None
+        return list(self.__teams).index(team) + 1
 
     @property
     def teams(self):
