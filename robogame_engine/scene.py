@@ -24,7 +24,7 @@ class Scene(CanLogging):
     detect_overlaps = False
     __teams = OrderedDict()
 
-    def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, **kwargs):
+    def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, headless=False, **kwargs):
         theme.set_theme_module(mod_path=theme_mod_path)
         self.objects = []
         self.time_sleep = theme.GAME_STEP_MIN_TIME
@@ -48,6 +48,7 @@ class Scene(CanLogging):
         self.ui = None
         self._step = 0
         self._checked_ids = []
+        self.headless = headless
 
     def register_to_team(self, obj):
         if obj.team not in self.__teams:
@@ -142,40 +143,42 @@ class Scene(CanLogging):
             Main game cycle - the game begin!
         """
         self.prepare(**self.init_kwargs)
-        self.parent_conn, child_conn = Pipe()
-        self.ui = Process(target=start_ui, args=(self.name, child_conn, theme.mod_path))
-        self.ui.start()
+        if not self.headless:
+            self.parent_conn, child_conn = Pipe()
+            self.ui = Process(target=start_ui, args=(self.name, child_conn, theme.mod_path))
+            self.ui.start()
 
         while True:
             cycle_begin = time.time()
 
-            # проверяем, есть ли новое состояние UI на том конце трубы
             ui_state = None
-            while self.parent_conn.poll(0):
-                # состояний м.б. много, оставляем только последнее
-                ui_state = self.parent_conn.recv()
+            if self.parent_conn:
+                # проверяем, есть ли новое состояние UI на том конце трубы
+                while self.parent_conn.poll(0):
+                    # состояний м.б. много, оставляем только последнее
+                    ui_state = self.parent_conn.recv()
 
-            # состояние UI изменилось - отрабатываем
-            if ui_state:
-                if ui_state.the_end:
-                    break
+                # состояние UI изменилось - отрабатываем
+                if ui_state:
+                    if ui_state.the_end:
+                        break
 
-                for obj in self.objects:
-                    obj._selected = obj.id in ui_state.selected_ids
+                    for obj in self.objects:
+                        obj._selected = obj.id in ui_state.selected_ids
 
-                # переключение режима отладки
-                if ui_state.switch_debug:
-                    if theme.DEBUG:  # были в режиме отладки
-                        self.hold_state = False
-                    else:
-                        self.hold_state = True
-                    theme.DEBUG = not theme.DEBUG
+                    # переключение режима отладки
+                    if ui_state.switch_debug:
+                        if theme.DEBUG:  # были в режиме отладки
+                            self.hold_state = False
+                        else:
+                            self.hold_state = True
+                        theme.DEBUG = not theme.DEBUG
 
             # шаг игры, если надо
             if not self.hold_state or (ui_state and ui_state.one_step):
                 self._step += 1
                 self.game_step()
-                if self._step % self.game_speed == 0 or (ui_state and ui_state.one_step):
+                if self.parent_conn and (self._step % self.game_speed == 0 or (ui_state and ui_state.one_step)):
                     # отсылаем новое состояние обьектов в UI раз в self.game_speed
                     objects_status = self.get_objects_status()
                     self.parent_conn.send(objects_status)
