@@ -49,3 +49,5 @@ LOGGING = {
 LOGLEVEL = logging.WARNING
 
 FONT_FILE_NAME = os.path.join(os.path.dirname(__file__), 'fonts', 'TerminusTTF-Bold-4.39.ttf')
+
+GAME_OVER = 'GAME_OVER'

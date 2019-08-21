@@ -16,7 +16,7 @@ from pygame.display import set_caption, set_mode
 from pygame.time import Clock
 
 from .constants import (
-    ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL, ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH)
+    ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL, ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH, GAME_OVER)
 from .geometry import Point
 from .utils import CanLogging
 from .theme import theme
@@ -241,6 +241,7 @@ class UserInterface(CanLogging):
         clock = Clock()
 
         self.fps_meter = Fps(color=(255, 255, 0))
+        self.game_over_indicator = GameOver()
 
         self._step = 0
         self.debug = False
@@ -251,6 +252,8 @@ class UserInterface(CanLogging):
         self._debug = False
         self.child_conn = None
 
+        self._game_over = False
+
     def run(self, child_conn):
         self.child_conn = child_conn
         while True:
@@ -258,10 +261,13 @@ class UserInterface(CanLogging):
                 objects_state = self._get_states()
                 if objects_state:
                     # были получены данные - обновляемся
-                    try:
-                        self.update_state(objects_state)
-                    except Exception as exc:
-                        self.logger.error('UI update_state: {}'.format(exc))
+                    if objects_state == GAME_OVER:
+                        self.game_over_indicator.show = True
+                    else:
+                        try:
+                            self.update_state(objects_state)
+                        except Exception as exc:
+                            self.logger.error('UI update_state: {}'.format(exc))
 
                 # проверяем - изменилось ли что-то у пользователя
                 if self.ui_state_changed() or self.ui_state.one_step:
@@ -459,19 +465,27 @@ class Fps(DirtySprite):
         Show game FPS
     """
     _layer = 5
+    font_size = 20
 
     def __init__(self, color=(255, 255, 255)):
         """
                 Make indicator
             """
-        super(Fps, self).__init__(UserInterface.sprites_by_layer[0])
+        super(Fps, self).__init__(UserInterface.sprites_by_layer[self._layer])
         self.show = False
-        self.font = pygame.font.Font(theme.FONT_FILE_NAME, 20)
-        self.color = color
-        self.image = self.font.render('-', 0, self.color)
+        self.font = pygame.font.Font(theme.FONT_FILE_NAME, self.font_size)
+        self._color = color
+        self.image = self.font.render('', 0, self.color)
         self.rect = self.image.get_rect()
-        self.rect = self.rect.move(theme.FIELD_WIDTH - 100, 10)
+        self.rect = self.rect.move(*self.position())
         self.fps = []
+
+    @property
+    def color(self):
+        return self._color
+
+    def position(self):
+        return theme.FIELD_WIDTH - 100, 10
 
     def update(self):
         """
@@ -486,6 +500,34 @@ class Fps(DirtySprite):
             msg = '{:5.0f} FPS'.format(fps)
         else:
             msg = ''
+        self.image = self.font.render(msg, 1, self.color)
+
+
+class GameOver(Fps):
+    """
+        Show GAME OVER message
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.step = 0
+        super(GameOver, self).__init__(*args, **kwargs)
+
+    @property
+    def font_size(self):
+        return theme.FIELD_HEIGHT // 3
+
+    @property
+    def color(self):
+        return 127 + self.step, 0, 0
+
+    def position(self):
+        return theme.FIELD_WIDTH // 2 - int(self.font_size * 2.3), theme.FIELD_HEIGHT // 2 - self.font_size // 2
+
+    def update(self):
+        self.step += 10
+        if self.step > 128:
+            self.step = 0
+        msg = 'GAME OVER' if self.show else ''
         self.image = self.font.render(msg, 1, self.color)
 
 

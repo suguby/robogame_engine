@@ -7,6 +7,7 @@ from multiprocessing import Pipe, Process
 from random import randint
 import time
 
+from robogame_engine.constants import GAME_OVER
 from robogame_engine.exceptions import RobogameException
 from .events import EventCollide, EventOverlap
 from .geometry import Vector, Point
@@ -138,6 +139,13 @@ class Scene(CanLogging):
         # TODO скорее get_statuses
         return dict([(obj.id, ObjectStatus(obj)) for obj in self.objects])
 
+    def is_game_over(self):
+        """
+        Вычисление окончания игры
+        :return: boolean True если надо игру закончить
+        """
+        return False
+
     def go(self):
         """
             Main game cycle - the game begin!
@@ -174,8 +182,13 @@ class Scene(CanLogging):
                             self.hold_state = True
                         theme.DEBUG = not theme.DEBUG
 
-            # шаг игры, если надо
-            if not self.hold_state or (ui_state and ui_state.one_step):
+            if self.is_game_over():
+                if self.parent_conn:
+                    self.parent_conn.send(GAME_OVER)
+                else:
+                    break
+            elif (not self.hold_state) or (ui_state and ui_state.one_step):
+                # шаг игры, если надо
                 self._step += 1
                 self.info('Game step {}'.format(self._step))
                 self.game_step()
@@ -191,7 +204,8 @@ class Scene(CanLogging):
                         time.sleep(cycle_time_rest)
 
         # ждем пока потомки помрут
-        self.ui.join()
+        if self.ui:
+            self.ui.join()
 
         print('Thank for playing with robogame! See you in the future :)')
 
