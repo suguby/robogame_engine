@@ -177,6 +177,7 @@ class Scene(CanLogging):
             # шаг игры, если надо
             if not self.hold_state or (ui_state and ui_state.one_step):
                 self._step += 1
+                self.info('Game step {}'.format(self._step))
                 self.game_step()
                 if self.parent_conn and (self._step % self.game_speed == 0 or (ui_state and ui_state.one_step)):
                     # отсылаем новое состояние обьектов в UI раз в self.game_speed

@@ -260,37 +260,37 @@ class GameObject(CanLogging):
         """
             Event: born
         """
-        self.info('born at {coord}')
+        self.debug('born at {coord}')
 
     def on_stop(self):
         """
             Event: stopped
         """
-        self.info('stopped at {coord}')
+        self.debug('stopped at {coord}')
 
     def on_stop_at_target(self, target):
         """
             Event: stopped at target
         """
-        self.info('stopped at target {}'.format(target))
+        self.debug('stopped at target {}'.format(target))
 
     def on_collide_with(self, obj_status):
         """
             Event: Collide
         """
-        self.info('collided with {}'.format(obj_status))
+        self.debug('collided with {}'.format(obj_status))
 
     def on_overlap_with(self, obj_status):
         """
             Event: Overlap
         """
-        self.info('overlapped with {}'.format(obj_status))
+        self.debug('overlapped with {}'.format(obj_status))
 
     def on_hearbeat(self):
         """
             Event: Heartbeat
         """
-        self.info('heartbeat')
+        self.debug('heartbeat')
 
 
 class ObjectStatus:
