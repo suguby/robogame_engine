@@ -48,7 +48,7 @@ class Scene(CanLogging):
         self.parent_conn = None
         self.ui = None
         self._step = 0
-        self._checked_ids = []
+        self.__overlap_map = None
         self.headless = headless
 
     def register_to_team(self, obj):
@@ -94,7 +94,7 @@ class Scene(CanLogging):
             Proceed objects states, collision detection, hits
             and radars discovering
         """
-        self._checked_ids = []
+        self.__overlap_map = self.__get_overlap_map()
         for obj in self.objects:
             obj.proceed_events()
             obj.proceed_commands()
@@ -103,30 +103,36 @@ class Scene(CanLogging):
                 self._check_collisions(obj)
             elif self.detect_overlaps:
                 self._detect_overlaps(obj)
-            self._checked_ids.append(obj.id)
 
-    def __overlapped_objects(self, left):
-        # TODO переписать на while и pop
-        for right in self.objects:
-            if (right.id == left.id) or (right.id in self._checked_ids):
-                continue
-            if hasattr(right, 'owner') and right.owner == left:
-                continue
-            if hasattr(left, 'owner') and left.owner == right:
-                continue
-            distance = left.distance_to(right)
-            overlap_distance = int(left.radius + right.radius - distance)
-            if overlap_distance > 1:
-                # may intersect by one pixel
-                yield overlap_distance, right
+    def __get_overlap_map(self):
+        overlap_map = defaultdict(list)
+        for i, left in enumerate(self.objects):
+            for right in self.objects[i+1:]:
+                try:
+                    if right.owner == left or left.owner == right:
+                        continue
+                except AttributeError:
+                    pass
+                summ_radius = left.radius + right.radius
+                if abs(left.x - right.x) > summ_radius and abs(left.y - right.y) > summ_radius:
+                    continue
+                distance = left.distance_to(right)
+                overlap_distance = int(summ_radius - distance)
+                if overlap_distance > 1:
+                    overlap_map[left].append((overlap_distance, right))
+                    overlap_map[right].append((overlap_distance, left))
+        return overlap_map
+
+    def __get_overlap_objects(self, left):
+        return self.__overlap_map.get(left, [])
 
     def _detect_overlaps(self, left):
-        for _, right in self.__overlapped_objects(left):
+        for _, right in self.__get_overlap_objects(left):
             left.add_event(EventOverlap(right))
             right.add_event(EventOverlap(left))
 
     def _check_collisions(self, left):
-        for overlap_distance, right in self.__overlapped_objects(left):
+        for overlap_distance, right in self.__get_overlap_objects(left):
             module = overlap_distance // 2
             step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
             left.debug('step_back_vector {}'.format(step_back_vector))
