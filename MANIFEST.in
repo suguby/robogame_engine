@@ -1,3 +1,4 @@
 include LICENSE
 include README.md
 include robogame_engine/fonts/*
+include requirements.txt
