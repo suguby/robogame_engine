@@ -11,7 +11,7 @@ from robogame_engine.geometry import Point
 class TestTurning(unittest.TestCase):
 
     def setUp(self):
-        self.scene = Scene(field=(100, 100), theme_mod_path='robogame_engine.tests.default_theme')
+        self.scene = Scene(field=(100, 100), theme_mod_path='tests.default_theme')
 
     def test_turn_to_direction(self):
         obj = GameObject(coord=Point(x=10, y=10), direction=0)
