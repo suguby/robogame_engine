@@ -187,8 +187,8 @@ class Scene(CanLogging):
                         else:
                             self.hold_state = True
                         theme.DEBUG = not theme.DEBUG
-
-            if self.is_game_over():
+            game_over_state, game_over_results = self.is_game_over()
+            if game_over_state:
                 if self.parent_conn:
                     self.parent_conn.send(GAME_OVER)
                 else:
@@ -214,6 +214,7 @@ class Scene(CanLogging):
             self.ui.join()
 
         print('Thank for playing with robogame! See you in the future :)')
+        return game_over_results
 
 
 def start_ui(name, child_conn, theme_mod_path):
