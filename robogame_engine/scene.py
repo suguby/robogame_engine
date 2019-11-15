@@ -150,7 +150,7 @@ class Scene(CanLogging):
         Вычисление окончания игры
         :return: boolean True если надо игру закончить
         """
-        return False
+        return False, {}
 
     def go(self):
         """
@@ -162,6 +162,7 @@ class Scene(CanLogging):
             self.ui = Process(target=start_ui, args=(self.name, child_conn, theme.mod_path))
             self.ui.start()
 
+        is_game_over, game_results = False, {}
         while True:
             cycle_begin = time.time()
 
@@ -187,8 +188,9 @@ class Scene(CanLogging):
                         else:
                             self.hold_state = True
                         theme.DEBUG = not theme.DEBUG
-            game_over_state, game_over_results = self.is_game_over()
-            if game_over_state:
+            # TODO название функции поменять на get_game_result()
+            is_game_over, game_results = self.is_game_over()
+            if is_game_over:
                 if self.parent_conn:
                     self.parent_conn.send(GAME_OVER)
                 else:
@@ -214,7 +216,7 @@ class Scene(CanLogging):
             self.ui.join()
 
         print('Thank for playing with robogame! See you in the future :)')
-        return game_over_results
+        return game_results
 
 
 def start_ui(name, child_conn, theme_mod_path):
