@@ -145,10 +145,10 @@ class Scene(CanLogging):
         # TODO скорее get_statuses
         return dict([(obj.id, ObjectStatus(obj)) for obj in self.objects])
 
-    def is_game_over(self):
+    def get_game_result(self):
         """
         Вычисление окончания игры
-        :return: boolean True если надо игру закончить
+        :return: boolean True если надо игру закончить, dict(team=stats, ...) статистика собранного
         """
         return False, {}
 
@@ -188,8 +188,7 @@ class Scene(CanLogging):
                         else:
                             self.hold_state = True
                         theme.DEBUG = not theme.DEBUG
-            # TODO название функции поменять на get_game_result()
-            is_game_over, game_results = self.is_game_over()
+            is_game_over, game_results = self.get_game_result()
             if is_game_over:
                 if self.parent_conn:
                     self.parent_conn.send(GAME_OVER)
