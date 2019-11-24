@@ -147,7 +147,7 @@ class Scene(CanLogging):
 
     def get_game_result(self):
         """
-        Вычисление окончания игры
+        Вычисление результатов игры
         :return: boolean True если надо игру закончить, dict(team=stats, ...) статистика покамандно
         """
         return False, {}
