@@ -3,8 +3,6 @@
 from collections import defaultdict
 from random import randint
 
-from six import PY3
-
 from robogame_engine.exceptions import RobogameException
 from robogame_engine.geometry import Vector, Point
 
@@ -15,10 +13,7 @@ from .utils import CanLogging
 from .states import StateStopped, StateMoving
 from .events import (EventHearbeat, EventStopped, EventBorned)
 
-if PY3:
-    from queue import Queue
-else:
-    from Queue import Queue
+from queue import Queue
 
 
 class GameObject(CanLogging):
