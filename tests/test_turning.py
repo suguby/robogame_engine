@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from mock import mock
+from unittest import mock
 
 from robogame_engine.scene import Scene
 from robogame_engine.objects import GameObject
