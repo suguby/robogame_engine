@@ -12,7 +12,7 @@ with open('requirements.txt') as ff:
 
 setuptools.setup(
     name='robogame_engine',
-    version='1.3.0.dev2',
+    version='1.3.0',
     packages=setuptools.find_packages(),
     include_package_data=True,
     license='BSD License',
