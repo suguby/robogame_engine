@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
-
 from collections import defaultdict
+from queue import Queue
 from random import randint
 
 from robogame_engine.exceptions import RobogameException
 from robogame_engine.geometry import Vector, Point
-
 from .commands import TurnCommand, MoveCommand, StopCommand
 from .constants import ROTATE_NO_TURN
+from .events import (EventHeartbeat, EventStopped, EventBorned)
+from .states import StateStopped, StateMoving
 from .theme import theme
 from .utils import CanLogging
-from .states import StateStopped, StateMoving
-from .events import (EventHearbeat, EventStopped, EventBorned)
-
-from queue import Queue
 
 
 class GameObject(CanLogging):
@@ -178,7 +175,7 @@ class GameObject(CanLogging):
     def _heartbeat(self):
         self._heartbeat_tics -= 1
         if not self._heartbeat_tics:
-            event = EventHearbeat()
+            event = EventHeartbeat()
             self.add_event(event)
             self._heartbeat_tics = theme.HEARTBEAT_INTERVAL
 
@@ -281,11 +278,14 @@ class GameObject(CanLogging):
         """
         self.debug('overlapped with {}'.format(obj_status))
 
-    def on_hearbeat(self):
+    def on_heartbeat(self):
         """
             Event: Heartbeat
         """
         self.debug('heartbeat')
+
+    def on_hearbeat(self):
+        self.on_heartbeat()
 
 
 class ObjectStatus:
