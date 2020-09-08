@@ -212,11 +212,14 @@ class UserInterface(CanLogging):
     sprites_by_layer = []
     sprites_all = []
 
-    def __init__(self, name, current_theme):
+    def __init__(self, name, current_theme, field=None):
         """
             Make game window
         """
         theme.set_theme_module(current_theme)
+
+        if field:
+            theme.FIELD_WIDTH, theme.FIELD_HEIGHT = field
 
         UserInterface.sprites_all = pygame.sprite.LayeredUpdates()
         UserInterface.sprites_by_layer = [pygame.sprite.LayeredUpdates(layer=i) for i in range(theme.MAX_LAYERS + 1)]

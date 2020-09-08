@@ -43,6 +43,7 @@ class Scene(CanLogging):
         self.init_kwargs = kwargs
         self.hold_state = False  # режим пошаговой отладки
         self.name = name
+        self.field = field
         if field:
             theme.FIELD_WIDTH, theme.FIELD_HEIGHT = field
         self.parent_conn = None
@@ -159,7 +160,7 @@ class Scene(CanLogging):
         self.prepare(**self.init_kwargs)
         if not self.headless:
             self.parent_conn, child_conn = Pipe()
-            self.ui = Process(target=start_ui, args=(self.name, child_conn, theme.mod_path))
+            self.ui = Process(target=start_ui, args=(self.name, child_conn, theme.mod_path, self.field))
             self.ui.start()
 
         is_game_over, game_results = False, {}
