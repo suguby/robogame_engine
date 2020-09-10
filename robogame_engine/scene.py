@@ -219,8 +219,8 @@ class Scene(CanLogging):
         return game_results
 
 
-def start_ui(name, child_conn, theme_mod_path):
-    ui = UserInterface(name, theme_mod_path)
+def start_ui(name, child_conn, theme_mod_path, field=None):
+    ui = UserInterface(name, theme_mod_path, field)
     ui.run(child_conn)
 
 
