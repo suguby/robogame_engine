@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import warnings
 
 from .utils import CanLogging
 
@@ -54,7 +55,8 @@ class EventOverlap(GameEvent):
         obj.on_overlap_with(self._event_objs)
 
 
-class EventHearbeat(GameEvent):
+class EventHeartbeat(GameEvent):
 
     def handle(self, obj):
-        obj.on_hearbeat()
+        warnings.warn('on_hearbeat was renamed to on_heartbeat and will be removed in next release')
+        obj.on_hearbeat()  # TODO перевести на on_heartbeat
