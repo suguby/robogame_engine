@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-
 import os
 
 MAX_SPEED = 5
@@ -28,8 +27,8 @@ LOGGING = {
     # 'disable_existing_loggers': False,
     'formatters': {
         'console': {
-            'format': "[%(levelname)s]: %(message)s",
-            'datefmt': "%Y-%m-%d %I:%M:%S"
+            'format': '[%(levelname)s]: %(message)s',
+            'datefmt': '%Y-%m-%d %I:%M:%S',
         },
     },
     'handlers': {
@@ -44,7 +43,7 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
-    }
+    },
 }
 LOGLEVEL = logging.WARNING
 

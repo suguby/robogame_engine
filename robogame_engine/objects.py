@@ -4,11 +4,12 @@ from queue import Queue
 from random import randint
 
 from robogame_engine.exceptions import RobogameException
-from robogame_engine.geometry import Vector, Point
-from .commands import TurnCommand, MoveCommand, StopCommand
+from robogame_engine.geometry import Point, Vector
+
+from .commands import MoveCommand, StopCommand, TurnCommand
 from .constants import ROTATE_NO_TURN
-from .events import (EventHeartbeat, EventStopped, EventBorned)
-from .states import StateStopped, StateMoving
+from .events import EventBorned, EventHeartbeat, EventStopped
+from .states import StateMoving, StateStopped
 from .theme import theme
 from .utils import CanLogging
 
@@ -37,7 +38,7 @@ class GameObject(CanLogging):
 
     def __init__(self, coord=None, radius=None, direction=None):
         if self.__scene is None:
-            raise RobogameException("You must create Scene instance at first!")
+            raise RobogameException('You must create Scene instance at first!')
         if self.auto_team:
             self.scene.register_to_team(obj=self)
         if radius is None:
@@ -76,7 +77,7 @@ class GameObject(CanLogging):
         if self._sprite_filename:
             return self._sprite_filename
         else:
-            return "{}.png".format(self.__class__.__name__.lower())
+            return '{}.png'.format(self.__class__.__name__.lower())
 
     @property
     def x(self):
@@ -139,7 +140,7 @@ class GameObject(CanLogging):
             try:
                 event.handle(obj=self)
             except Exception as exc:
-                self.error("Exception at {} event {} handle: {}".format(self, event, exc))
+                self.error('Exception at %s event %s handle: %s', self, event, exc)
 
     def proceed_commands(self):
         while not self._commands.empty():
@@ -163,8 +164,9 @@ class GameObject(CanLogging):
             return self.coord.distance_to(obj.coord)
         if isinstance(obj, Point):
             return self.coord.distance_to(obj)
-        raise Exception("GameObject.distance_to: obj {} "
-                        "must be GameObject or Point!".format(obj,))
+        raise Exception(
+            'GameObject.distance_to: obj {} must be GameObject or Point!'.format(obj),
+        )
 
     def near(self, obj):
         """
@@ -218,7 +220,7 @@ class GameObject(CanLogging):
     def __unicode__(self):
         return str(self)
 
-    ############# Manage ###############
+    # ############ Manage ###############
 
     def turn_to(self, target, speed=None):
         """
@@ -246,7 +248,7 @@ class GameObject(CanLogging):
         self.add_command(command=StopCommand(obj=self))
         self.add_event(event=EventStopped())
 
-    ############# Events ###############
+    # ############ Events ###############
 
     def on_born(self):
         """
@@ -264,19 +266,19 @@ class GameObject(CanLogging):
         """
             Event: stopped at target
         """
-        self.debug('stopped at target {}'.format(target))
+        self.debug('stopped at target %s', target)
 
     def on_collide_with(self, obj_status):
         """
             Event: Collide
         """
-        self.debug('collided with {}'.format(obj_status))
+        self.debug('collided with %s', obj_status)
 
     def on_overlap_with(self, obj_status):
         """
             Event: Overlap
         """
-        self.debug('overlapped with {}'.format(obj_status))
+        self.debug('overlapped with %s', obj_status)
 
     def on_heartbeat(self):
         """
@@ -289,7 +291,7 @@ class ObjectStatus:
     """
         Hold game object state, useful for exchange between processes
     """
-    SEND_TYPES = (bool, int, float, str, dict, )  # unicode,
+    SEND_TYPES = (bool, int, float, str, dict)  # unicode,
     __fields = defaultdict(list)
 
     def __init__(self, obj):
@@ -311,4 +313,3 @@ class ObjectStatus:
                         self.__fields[self.class_name].append(attr_name)
                         break
         return self.__fields[self.class_name]
-

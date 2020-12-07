@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from robogame_engine.exceptions import RobogameException
-from .theme import theme
+
 from .geometry import Point, Vector
+from .theme import theme
 from .utils import CanLogging
 
 
@@ -39,14 +40,16 @@ class MoveCommand(Command):
         if isinstance(target, (Point, GameObject)):
             self.target = target
         else:
-            raise RobogameException("Target {} must be one of Point, GameObject, Image".format(target))
+            raise RobogameException(
+                'Target {} must be one of Point, GameObject, Image'.format(target),
+            )
         self.speed = speed
 
     def execute(self):
         self.obj.state.move(target=self.target, speed=self.speed, **self.kwargs)
 
     def __str__(self):
-        return super(MoveCommand, self).__str__() + " tgt={} spd={}".format(self.target, self.speed)
+        return super(MoveCommand, self).__str__() + ' tgt={} spd={}'.format(self.target, self.speed)
 
 
 class TurnCommand(Command):
@@ -65,14 +68,15 @@ class TurnCommand(Command):
             self.vector = Vector.from_direction(direction=direction, module=theme.MAX_SPEED)
             self.target = obj.coord + self.vector * 500
         else:
-            raise RobogameException("use GameObject.turn_to(GameObject/Point "
-                            "or Angle). Your pass {}".format(target))
+            raise RobogameException(
+                'use GameObject.turn_to(GameObject/Point or Angle). Your pass {}'.format(target),
+            )
 
     def execute(self):
         self.obj.state.turn(vector=self.vector, target=self.target, speed=self.speed)
 
     def __str__(self):
-        return super(TurnCommand, self).__str__() + " tgt={}".format(self.target)
+        return super(TurnCommand, self).__str__() + ' tgt={}'.format(self.target)
 
 
 class StopCommand(Command):

@@ -175,5 +175,3 @@ def get_arctan(dy, dx):
 #         Determine the tangent of the angle in degrees
 #     """
 #     return math.tan(angle / 180.0 * math.pi)
-
-

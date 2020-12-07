@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
 
-from .scene import Scene
 from .objects import GameObject
-
+from .scene import Scene

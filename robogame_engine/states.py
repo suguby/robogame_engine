@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from .theme import theme
-from .events import EventStoppedAtTargetPoint, EventStopped
+from .events import EventStopped, EventStoppedAtTargetPoint
 from .geometry import Vector
+from .theme import theme
 from .utils import CanLogging
 
 
@@ -35,7 +35,7 @@ class ObjectState(CanLogging):
         raise NotImplementedError
 
     def __str__(self):
-        return "{}: {}".format(self.__class__.__name__, self.__dict__)
+        return '{}: {}'.format(self.__class__.__name__, self.__dict__)
 
 
 class StateTurning(ObjectState):

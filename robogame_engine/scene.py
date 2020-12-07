@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import time
+
 from collections import defaultdict, OrderedDict
 from multiprocessing import Pipe, Process
 from random import randint
-import time
 
 from robogame_engine.constants import GAME_OVER
 from robogame_engine.exceptions import RobogameException
+
 from .events import EventCollide, EventOverlap
-from .geometry import Vector, Point
-from .objects import ObjectStatus, GameObject
+from .geometry import Point, Vector
+from .objects import GameObject, ObjectStatus
 from .theme import theme
 from .user_interface import UserInterface
 from .utils import CanLogging
@@ -25,7 +27,10 @@ class Scene(CanLogging):
     detect_overlaps = False
     __teams = OrderedDict()
 
-    def __init__(self, name='RoboGame', field=None, theme_mod_path=None, speed=1, headless=False, **kwargs):
+    def __init__(
+            self, name='RoboGame', field=None, theme_mod_path=None,
+            speed=1, headless=False, **kwargs,
+    ):
         theme.set_theme_module(mod_path=theme_mod_path)
         self.objects = []
         self.time_sleep = theme.GAME_STEP_MIN_TIME
@@ -56,8 +61,8 @@ class Scene(CanLogging):
         if obj.team not in self.__teams:
             if self.teams_count >= theme.TEAMS_COUNT:
                 raise RobogameException(
-                    "Only {} teams! Can't create team for {}".format(
-                        theme.TEAMS_COUNT, obj.team))
+                    "Only {} teams! Can't create team for {}".format(theme.TEAMS_COUNT, obj.team),
+                )
             self.__teams[obj.team] = []
         self.__teams[obj.team].append(obj)
 
@@ -81,7 +86,7 @@ class Scene(CanLogging):
         try:
             self.objects.remove(obj)
         except ValueError:
-            self.logger.warning("Try to remove unexists obj {}".format(obj))
+            self.logger.warning('Try to remove unexists obj %s', obj)
 
     def get_objects_by_type(self, cls=None, cls_name=None):
         if cls:
@@ -108,7 +113,7 @@ class Scene(CanLogging):
     def __get_overlap_map(self):
         overlap_map = defaultdict(list)
         for i, left in enumerate(self.objects):
-            for right in self.objects[i+1:]:
+            for right in self.objects[i + 1:]:
                 try:
                     if right.owner == left or left.owner == right:
                         continue
@@ -136,7 +141,7 @@ class Scene(CanLogging):
         for overlap_distance, right in self.__get_overlap_objects(left):
             module = overlap_distance // 2
             step_back_vector = Vector.from_points(right.coord, left.coord, module=module)
-            left.debug('step_back_vector {}'.format(step_back_vector))
+            left.debug('step_back_vector %s', step_back_vector)
             left.coord += step_back_vector
             right.coord -= step_back_vector
             left.add_event(EventCollide(right))
@@ -144,7 +149,7 @@ class Scene(CanLogging):
 
     def get_objects_status(self):
         # TODO скорее get_statuses
-        return dict([(obj.id, ObjectStatus(obj)) for obj in self.objects])
+        return {obj.id: ObjectStatus(obj) for obj in self.objects}
 
     def get_game_result(self):
         """
@@ -160,7 +165,9 @@ class Scene(CanLogging):
         self.prepare(**self.init_kwargs)
         if not self.headless:
             self.parent_conn, child_conn = Pipe()
-            self.ui = Process(target=start_ui, args=(self.name, child_conn, theme.mod_path, self.field))
+            self.ui = Process(
+                target=start_ui, args=(self.name, child_conn, theme.mod_path, self.field),
+            )
             self.ui.start()
 
         is_game_over, game_results = False, {}
@@ -198,9 +205,13 @@ class Scene(CanLogging):
             elif (not self.hold_state) or (ui_state and ui_state.one_step):
                 # шаг игры, если надо
                 self._step += 1
-                self.info('Game step {}'.format(self._step))
+                self.info('Game step %s', self._step)
                 self.game_step()
-                if self.parent_conn and (self._step % self.game_speed == 0 or (ui_state and ui_state.one_step)):
+                need_send_state = (
+                    self.parent_conn
+                    and (self._step % self.game_speed == 0 or (ui_state and ui_state.one_step))
+                )
+                if need_send_state:
                     # отсылаем новое состояние обьектов в UI раз в self.game_speed
                     objects_status = self.get_objects_status()
                     self.parent_conn.send(objects_status)
