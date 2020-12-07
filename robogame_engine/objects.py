@@ -284,9 +284,6 @@ class GameObject(CanLogging):
         """
         self.debug('heartbeat')
 
-    def on_hearbeat(self):
-        self.on_heartbeat()
-
 
 class ObjectStatus:
     """
