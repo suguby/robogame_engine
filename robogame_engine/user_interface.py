@@ -2,24 +2,28 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from collections import defaultdict
 import os
 import random
-import pygame
-from pygame.locals import *
-from pygame.sprite import DirtySprite
+from collections import defaultdict
 
-from pygame.font import Font
-from pygame.transform import flip
-from pygame.draw import line, circle, rect, aalines
+import pygame
 from pygame.display import set_caption, set_mode
+from pygame.draw import aalines, circle, line, rect
+from pygame.font import Font
+from pygame.locals import (
+    K_d, K_ESCAPE, K_f, K_q, K_s, KEYDOWN, QUIT, Rect, RLEACCEL,
+)
+from pygame.sprite import DirtySprite
 from pygame.time import Clock
+from pygame.transform import flip
 
 from .constants import (
-    ROTATE_NO_TURN, ROTATE_TURNING, ROTATE_FLIP_VERTICAL, ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_BOTH, GAME_OVER)
+    GAME_OVER, ROTATE_FLIP_BOTH, ROTATE_FLIP_HORIZONTAL, ROTATE_FLIP_VERTICAL,
+    ROTATE_NO_TURN, ROTATE_TURNING,
+)
 from .geometry import Point
-from .utils import CanLogging
 from .theme import theme
+from .utils import CanLogging
 
 
 class RoboSprite(DirtySprite, CanLogging):
@@ -27,12 +31,12 @@ class RoboSprite(DirtySprite, CanLogging):
         Show sprites on screen
     """
 
-    def __init__(self, id, status):
+    def __init__(self, id_, status):
         """
             Link object with its sprite
         """
         self.__images_cash = defaultdict(dict)
-        self.id = id
+        self.id = id_
         self.status = status
 
         layer = int(self.status.layer)
@@ -40,14 +44,17 @@ class RoboSprite(DirtySprite, CanLogging):
             layer = theme.MAX_LAYERS
         if layer < 0:
             layer = 0
-        super(RoboSprite, self).__init__(UserInterface.sprites_all, UserInterface.sprites_by_layer[layer])
+        super(RoboSprite, self).__init__(
+            UserInterface.sprites_all,
+            UserInterface.sprites_by_layer[layer],
+        )
 
         self.image = self.images[0].copy()
         self.rect = self.image.get_rect()
         self._debug_color = (
             random.randint(200, 255),
             random.randint(50, 255),
-            0
+            0,
         )
         self._id_font = Font(theme.FONT_FILE_NAME, 20)
         self._selected = False
@@ -90,18 +97,24 @@ class RoboSprite(DirtySprite, CanLogging):
     def _show_meters(self):
         if hasattr(self.status, 'meter_1') and self.status.meter_1 > 0:
             if self.status.meter_1 > 1:
-                self.warning("meter_1 {meter} must be expressed as a decimal", meter=self.status.meter_1)
+                self.warning(
+                    'meter_1 {meter} must be expressed as a decimal',
+                    meter=self.status.meter_1,
+                )
                 self.status.meter_1 = 1
             bar_px = int(self.status.meter_1 * self.rect.width)
             line(self.image, theme.METER_1_COLOR, (0, 3), (bar_px, 3), 2)
         if hasattr(self.status, 'meter_2') and self.status.meter_2 > 0:
             if self.status.meter_2 > 1:
-                self.warning("meter_2 {meter} must be expressed as a decimal", meter=self.status.meter_2)
+                self.warning(
+                    'meter_2 {meter} must be expressed as a decimal',
+                    meter=self.status.meter_2,
+                )
                 self.status.meter_2 = 1
             bar_px = int(self.status.meter_2 * self.rect.width)
             line(self.image, theme.METER_2_COLOR, (0, 5), (bar_px, 5), 2)
         if hasattr(self.status, 'counter') and self.status.counter is not None:
-            txt = "{}".format(self.status.counter)
+            txt = str(self.status.counter)
             txt_image = self.font.render(txt, 1, self.counter_attrs['color'])
             self.image.blit(txt_image, self.counter_attrs['position'])
 
@@ -113,9 +126,8 @@ class RoboSprite(DirtySprite, CanLogging):
     def _show_id(self):
         if hasattr(self.status, 'id'):
             id_image = self._id_font.render(
-                str(self.status.id),
-                0,
-                self._debug_color)
+                str(self.status.id), 0, self._debug_color,
+            )
             self.image.blit(id_image, (5, 5))
 
     def _show_detection(self):
@@ -198,10 +210,10 @@ class UserInput:
         return not self.__ne__(other)
 
     def __ne__(self, other):
-        return (self.one_step != other.one_step or
-                self.switch_debug != other.switch_debug or
-                self.the_end != other.the_end or
-                self.selected_ids != other.selected_ids)
+        return (self.one_step != other.one_step
+                or self.switch_debug != other.switch_debug
+                or self.the_end != other.the_end
+                or self.selected_ids != other.selected_ids)
 
 
 class UserInterface(CanLogging):
@@ -222,12 +234,16 @@ class UserInterface(CanLogging):
             theme.FIELD_WIDTH, theme.FIELD_HEIGHT = field
 
         UserInterface.sprites_all = pygame.sprite.LayeredUpdates()
-        UserInterface.sprites_by_layer = [pygame.sprite.LayeredUpdates(layer=i) for i in range(theme.MAX_LAYERS + 1)]
+        UserInterface.sprites_by_layer = [
+            pygame.sprite.LayeredUpdates(layer=i) for i in range(theme.MAX_LAYERS + 1)
+        ]
 
         pygame.init()
 
-        screenrect = Rect((0, 0),
-                          (theme.FIELD_WIDTH, theme.FIELD_HEIGHT))
+        screenrect = Rect(
+            (0, 0),
+            (theme.FIELD_WIDTH, theme.FIELD_HEIGHT),
+        )
         self.screen = set_mode(screenrect.size)
         set_caption(name)
 
@@ -269,8 +285,8 @@ class UserInterface(CanLogging):
                     else:
                         try:
                             self.update_state(objects_state)
-                        except Exception as exc:
-                            self.logger.error('UI update_state: {}'.format(exc))
+                        except Exception:  # no qa
+                            self.logger.exception('UI update_state: %s', objects_state)
 
                 # проверяем - изменилось ли что-то у пользователя
                 if self.ui_state_changed() or self.ui_state.one_step:
@@ -282,10 +298,10 @@ class UserInterface(CanLogging):
                 # отрисовываемся
                 try:
                     self.draw()
-                except Exception as exc:
-                    self.logger.error('UI draw: {}'.format(exc))
-            except Exception as exc:
-                self.logger.error('UI: {}'.format(exc))
+                except Exception:  # no qa
+                    self.logger.exception('UI draw')
+            except Exception:  # no qa
+                self.logger.exception('UI')
         # очистка
         for group in self.sprites_by_layer:
             for sprite in group:
@@ -316,7 +332,7 @@ class UserInterface(CanLogging):
         to_create = new_ids - old_ids
         for obj_id in to_create:
             # новые объекты - создаем спрайты
-            sprite = RoboSprite(id=obj_id, status=objects_status[obj_id])
+            sprite = RoboSprite(id_=obj_id, status=objects_status[obj_id])
             new_game_objects[obj_id] = sprite
         self.info('created {count} objs', count=len(to_create))
 
@@ -344,9 +360,9 @@ class UserInterface(CanLogging):
             if event.type == KEYDOWN and event.key == K_f:
                 self.fps_meter.show = not self.fps_meter.show
 
-            if ((event.type == QUIT) or
-                    (event.type == KEYDOWN and event.key == K_ESCAPE) or
-                    (event.type == KEYDOWN and event.key == K_q)):
+            if ((event.type == QUIT)
+                    or (event.type == KEYDOWN and event.key == K_ESCAPE)
+                    or (event.type == KEYDOWN and event.key == K_q)):
                 self.ui_state.the_end = True
             if event.type == KEYDOWN and event.key == K_d:
                 self.ui_state.switch_debug = True
@@ -411,12 +427,17 @@ class UserInterface(CanLogging):
         angle_l = (obj.status.direction + angle // 2) / 180.0 * pi
         radar_range = theme.tank_radar_range
         points = [
-            Point(obj.status.x + cos(angle_r) * radar_range,
-                  obj.status.y + sin(angle_r) * radar_range),
-            Point(obj.status.x + cos(angle_l) * radar_range,
-                  obj.status.y + sin(angle_l) * radar_range),
-            Point(obj.status.x,
-                  obj.status.y)
+            Point(
+                x=obj.status.x + cos(angle_r) * radar_range,
+                y=obj.status.y + sin(angle_r) * radar_range,
+            ),
+            Point(
+                x=obj.status.x + cos(angle_l) * radar_range,
+                y=obj.status.y + sin(angle_l) * radar_range,
+            ),
+            Point(
+                x=obj.status.x, y=obj.status.y,
+            ),
         ]
         points = [x.to_screen() for x in points]
         aalines(self.screen, obj._debug_color, True, points)
@@ -430,8 +451,8 @@ class UserInterface(CanLogging):
         for group in self.sprites_by_layer:
             try:
                 group.update()
-            except Exception as exc:
-                self.logger.exception('UI group.update: {}'.format(exc))
+            except Exception:  # no qa
+                self.logger.exception('%s', group)
 
         # draw the scene
         # if self._debug:
@@ -440,8 +461,8 @@ class UserInterface(CanLogging):
             for group in self.sprites_by_layer:
                 try:
                     group.draw(self.screen)
-                except Exception as exc:
-                    self.logger.error('UI group.draw: {}'.format(exc))
+                except Exception:  # no qa
+                    self.logger.error('UI: group=%s self.screen=%s', group, self.screen)
             # for obj in self.all:
             #     if hasattr(obj, 'status') and \
             #        hasattr(obj.status, 'gun_heat') and \
@@ -524,7 +545,10 @@ class GameOver(Fps):
         return 127 + self.step, 0, 0
 
     def position(self):
-        return theme.FIELD_WIDTH // 2 - int(self.font_size * 2.3), theme.FIELD_HEIGHT // 2 - self.font_size // 2
+        return (
+            theme.FIELD_WIDTH // 2 - int(self.font_size * 2.3),
+            theme.FIELD_HEIGHT // 2 - self.font_size // 2,
+        )
 
     def update(self):
         self.step += 10
@@ -542,11 +566,10 @@ def load_image(name, colorkey=None):
     try:
         image = pygame.image.load(fullname)
     except pygame.error as exc:
-        print("Cannot load image:", fullname)
+        print('Cannot load image:', fullname)
         raise SystemExit(exc)
-        #image = image.convert()
     if colorkey is not None:
-        if colorkey is -1:
+        if colorkey == -1:
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey, RLEACCEL)
     return image
